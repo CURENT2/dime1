@@ -12,12 +12,20 @@ void *ctx, *socket_ptr;
 static int initialized = 0;
 
 /* Initialize a ZMQ server */
-int initialize(char *socket_addr) {
+int initialize(char *socket_addr, int connect_to_existing_socket) {
     int rc;
     mexLock();
     ctx = zmq_ctx_new();
-    socket_ptr = zmq_socket(ctx, ZMQ_REP);
-    rc = zmq_bind(socket_ptr, socket_addr);
+    if (connect_to_existing_socket == 0)
+    {
+        socket_ptr = zmq_socket(ctx, ZMQ_REP);
+        rc = zmq_bind(socket_ptr, socket_addr);
+    }
+    else
+    {
+        socket_ptr = zmq_socket(ctx, ZMQ_REQ);
+        rc = zmq_connect(socket_ptr, socket_addr);
+    }
 
     if (!rc) {
         initialized = 1;
@@ -82,7 +90,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         p = mxGetLogicals(plhs[0]);
 
         if (!initialized) {
-            if (!initialize(socket_addr)) {
+            if (!initialize(socket_addr, 1)) {
                 p[0] = 1;
                 mexPrintf("Socket created at: %s\n", socket_addr);
             } else {

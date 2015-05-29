@@ -197,25 +197,39 @@ class _Session(object):
                          stdout=subprocess.PIPE)
 
     # Start server/client session and make the connection
-    def start(self):
+    def start(self, connect_to_running_instance, act_as_server):
         # Setup socket
         self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.REQ)
+
+        if act_as_server == True:
+            self.socket = self.context.socket(zmq.REP)
+        else:
+            self.socket = self.context.socket(zmq.REQ)
+
         if self.platform == "win32":
             port = self.socket.bind_to_random_port(self.socket_addr)
             self.socket_addr = self.socket_addr + ":%s"%port
             self.socket.unbind(self.socket_addr)
 
-        # Start the MATLAB server in a new process
-        print("Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr))
-        print("Send 'exit' command to kill the server")
-        self._run_server()
+        if connect_to_running_instance == True:
+            print("Not starting server, but connecting remotely");
+            self.socket_addr = "ipc:///tmp/m3c"
+        else:
+            # Start the MATLAB server in a new process
+            print("Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr))
+            print("Send 'exit' command to kill the server")
+            self._run_server()
 
-        # Start the client
-        self.socket.connect(self.socket_addr)
+        if act_as_server == True:
+            # Start the server
+            self.socket.bind(self.socket_addr)
+        else:
+            # Start the client
+            self.socket.connect(self.socket_addr)
 
         self.started = True
 
+        """
         # Test if connection is established
         if self.is_connected():
             print("%s started and connected!" % self._program_name())
@@ -223,6 +237,7 @@ class _Session(object):
             return self
         else:
             raise ValueError("%s failed to start" % self._program_name())
+        """
 
     def _response(self, **kwargs):
         req = json.dumps(kwargs, cls=PymatEncoder)
