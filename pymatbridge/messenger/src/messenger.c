@@ -65,7 +65,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     char *cmd;
     /* If no input argument, print out the usage */
     if (nrhs == 0) {
-        mexErrMsgTxt("Usage: messenger('init|listen|respond', extra1, extra2, ...)");
+        mexErrMsgTxt("Usage: messenger('init|recv|send', extra1, extra2, ...)");
     }
 
     /* Get the input command */
@@ -104,7 +104,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         return;
 
     /* Listen over an existing socket */
-    } else if (strcmp(cmd, "listen") == 0) {
+    } else if (strcmp(cmd, "recv") == 0) {
         int byte_recvd;
         char *recv_buffer = mxCalloc(BUFLEN, sizeof(char));
         zmq_pollitem_t polls[] = {{socket_ptr, 0, ZMQ_POLLIN, 0}};
@@ -131,7 +131,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         return;
 
     /* Send a message out */
-    } else if (strcmp(cmd, "respond") == 0) {
+    } else if (strcmp(cmd, "send") == 0) {
         size_t msglen;
         char *msg_out;
         mxLogical *p;
