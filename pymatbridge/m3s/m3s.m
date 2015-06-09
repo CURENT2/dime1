@@ -1,9 +1,9 @@
 classdef m3s
     methods(Static)
-        function [] = start()
+        function [] = start(name)
             json_startup;
             messenger('init', 'ipc:///tmp/m3c');
-            messenger('send', 'connect');
+            messenger('send', name);
             messenger('recv')
         end
 
@@ -21,7 +21,7 @@ classdef m3s
                 outgoing.command = 'response';
                 outgoing.args = rep;
                 messenger('send', json_dump(outgoing));
-                messenger('recv') % Receive an OK to set the state back to "sender"
+                messenger('recv') % Receive an OK to set state back to "sender"
             else
                 % Tell Python to pick a variable
                 outgoing = {};
@@ -35,7 +35,7 @@ classdef m3s
                 outgoing.command = 'response';
                 outgoing.args = rep;
                 messenger('send', json_dump(outgoing));
-                messenger('recv') % Receive an OK to set the state back to "sender";
+                messenger('recv') % Receive an OK to set state back to "sender"
             end
         end
     end

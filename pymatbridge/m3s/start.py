@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#/usr/bin/python
 import time
 import pprint
 import threading
@@ -8,11 +8,10 @@ from pymatbridge import Matlab
 
 connected_clients = {}
 
-# Perform a sequence of things on the client in a separate thread
 def dispatch(client_id, msg):
-    print "People connected: "
-    for key in connected_clients:
-        print connected_clients[key]
+    """Perform a sequence of things on the client in a separate thread."""
+    
+    print_connected()
 
     decoded_msg = matlab.json_decode(msg)
     if 'command' not in decoded_msg:
@@ -30,13 +29,21 @@ def dispatch(client_id, msg):
         matlab.socket.send_multipart([client_id, '', 'OK'])
         print decoded_pymat_response['result']
 
-# Check if this name is duplicate amongst connected clients
 def name_is_duplicate(name):
+    """Check if this name is duplicate amongst connected clients."""
+
     for key in connected_clients:
-        if connected_clients[key] == msg[2]:
+        if connected_clients[key] == name: # changed from msg[2] to name
             return True
 
     return False
+
+def print_connected():
+    """Prints client_id and name for each connected client."""
+
+    print "Clients include: "
+    for key in connected_clients:
+        print "id: {} name: {}".format(key, connected_clients[key])
 
 if __name__ == '__main__':
     matlab = Matlab()
@@ -45,15 +52,20 @@ if __name__ == '__main__':
 
     while True:
         msg = socket.recv_multipart()
+        print "The following message was received: "
+        print msg
         if (msg[0] in connected_clients):
             thread = Thread(target=dispatch, args=(msg[0], msg[2],))
             thread.start()
         else:
-            socket.send_multipart([msg[0], '', 'CONNECTED'])
             if name_is_duplicate(msg[2]) == False:
                 connected_clients[msg[0]] = msg[2]
+                socket.send_multipart([msg[0], '', 'CONNECTED'])
+                print_connected()
             else:
                 # Send a no message
-                pass
+                print "Duplicate name added"
+                socket.send_multipart([msg[0], '', 'DUPLICATE_NAME_ERROR'])
+                print_connected()
 
         time.sleep(0.1)
