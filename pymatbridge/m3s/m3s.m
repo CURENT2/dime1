@@ -7,9 +7,13 @@ classdef m3s
             response = messenger('recv')
         end
 
-        function [] = sync(var_name)
+        function [] = exit()
+            messenger('exit')
+        end
+
+        function [] = sync(var_name, broadcast)
             outgoing = {};
-            if ~exist('var_name', 'var')
+            if var_name == ''
                 % Ask Python if it has anything to send
                 outgoing.command = 'sync';
                 outgoing.args = '';
@@ -25,7 +29,11 @@ classdef m3s
             else
                 % Tell Python to pick a variable
                 outgoing = {};
-                outgoing.command = 'sync';
+                if (broadcast == true)
+                    outgoing.command = 'broadcast';
+                else
+                    outgoing.command = 'sync';
+                end
                 outgoing.args = var_name;
                 messenger('send', json_dump(outgoing));
                 msg = messenger('recv')
