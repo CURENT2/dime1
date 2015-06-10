@@ -51,10 +51,10 @@ int checkInitialized(void) {
 void cleanup (void) {
     /* Send a confirmation message to the client */
     zmq_send(socket_ptr, "exit", 4, 0);
-
     zmq_close(socket_ptr);
     mexPrintf("Socket closed\n");
     zmq_term(ctx);
+    initialized = 0;
     mexPrintf("Context terminated\n");
 }
 
@@ -108,9 +108,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
         int byte_recvd;
         char *recv_buffer = mxCalloc(BUFLEN, sizeof(char));
         zmq_pollitem_t polls[] = {{socket_ptr, 0, ZMQ_POLLIN, 0}};
-        
+
         if (!checkInitialized()) return;
-        
+
         /* allow MATLAB to draw its graphics every 20ms */
         while (zmq_poll(polls, 1, 20000) == 0) {
             mexEvalString("drawnow");

@@ -4,7 +4,8 @@ classdef m3s
             json_startup;
             messenger('init', 'ipc:///tmp/m3c');
             messenger('send', name);
-            messenger('recv')
+            response = messenger('recv')
+        end
 
         function [] = sync(var_name)
             outgoing = {};
