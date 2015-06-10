@@ -1,9 +1,9 @@
 classdef m3s
     methods(Static)
-        function [] = start()
+        function [] = start(client_name)
             json_startup;
             messenger('init', 'ipc:///tmp/m3c');
-            messenger('send', 'connect');
+            messenger('send', client_name);
             messenger('recv')
         end
 

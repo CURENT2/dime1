@@ -10,10 +10,6 @@ connected_clients = {}
 
 # Perform a sequence of things on the client in a separate thread
 def dispatch(client_id, msg):
-    print "People connected: "
-    for key in connected_clients:
-        print connected_clients[key]
-
     decoded_msg = matlab.json_decode(msg)
     if 'command' not in decoded_msg:
         # panic for now!
