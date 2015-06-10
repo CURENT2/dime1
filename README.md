@@ -1,6 +1,6 @@
-## This fork has changed in order to accommodate the M3S architecture used for a distributed matlab simulating environment.
+## **This fork has changed in order to accommodate the M3S architecture used for a distributed matlab simulating environment.**
 
-# Python-MATLAB(R) Bridge and IPython `matlab` magic
+## Python-MATLAB(R) Bridge and IPython `matlab` magic
 
 A python interface to call out to [Matlab(R)](http://mathworks.com). Original
 implementation by [Max Jaderberg](http://www.maxjaderberg.com/). His original
