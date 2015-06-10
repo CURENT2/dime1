@@ -13,7 +13,7 @@ classdef m3s
 
         function [] = sync(var_name, broadcast)
             outgoing = {};
-            if var_name == ''
+            if strcmp(var_name, '') == 1
                 % Ask Python if it has anything to send
                 outgoing.command = 'sync';
                 outgoing.args = '';

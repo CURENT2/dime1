@@ -22,13 +22,14 @@ def dispatch(client_id, msg):
         else:
             # Run some code and send a variable
             if connected_clients[client_id]['name'] == 'simulator':
-                matlab.run_code(client_id, 'g = randn')
+                #matlab.run_code(client_id, 'g = randn')
+                matlab.set_variable(client_id, 'g', 83)
             else:
                 # See if the clients have anything in their queues
                 try:
                     message_to_send = connected_clients[client_id]['queue'].get(False)
-                    matlab.run_code(client_id, 'g = ' + str(message_to_send))
-                    print "Sending", str(message_to_send)
+                    matlab.set_variable(client_id, 'g', message_to_send)
+                    print "Sending message to ", connected_clients[client_id]['name']
                 except Queue.Empty:
                     print "Nothing to send to ", connected_clients[client_id]['name']
                     matlab.socket.send_multipart([client_id, '', 'OK'])

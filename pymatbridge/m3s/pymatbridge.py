@@ -345,10 +345,10 @@ class _Session(object):
         return resp
         # return resp['result'] if resp['success'] else default
 
-    def set_variable(self, varname, value):
+    def set_variable(self, client_id, varname, value):
         if isinstance(value, spmatrix):
             return self._set_sparse_variable(varname, value)
-        return self.run_func('assignin', 'base', varname, value, nargout=0)
+        return self.run_func(client_id, 'assignin', 'base', varname, value, nargout=0)
 
     def set_plot_settings(self, width=512, height=384, inline=True):
         if inline:
