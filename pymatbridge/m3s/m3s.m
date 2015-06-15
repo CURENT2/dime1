@@ -47,5 +47,23 @@ classdef m3s
                 messenger('recv') % Receive an OK to set state back to "sender"
             end
         end
+
+        function [] = send_var(recipient_name, var_name)
+            % Tell Python to pick a variable
+            outgoing = {};
+            outgoing.command = 'send';
+            outgoing.args = var_name;
+            messenger('send', json_dump(outgoing));
+            msg = messenger('recv')
+
+            % eval the code and send the response back
+            rep = pymat_eval(json_load(msg))
+            outgoing.command = 'response';
+            outgoing.args = rep
+            outgoing.meta = struct('var_name', var_name)
+            outgoing.meta.recipient_name = recipient_name
+            messenger('send', json_dump(outgoing));
+            messenger('recv') % Receive an OK to set state back to "sender"
+        end
     end
 end

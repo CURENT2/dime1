@@ -35,6 +35,10 @@ def dispatch(client_id, msg):
                     print "Nothing to send to ", connected_clients[client_id]['name']
                     matlab.socket.send_multipart([client_id, '', 'OK'])
 
+    if decoded_msg['command'] == 'send':
+        connected_clients[client_id]['last_command'] = 'send'
+        matlab.get_variable(client_id, decoded_msg['args'])
+
     if decoded_msg['command'] == 'broadcast':
         connected_clients[client_id]['last_command'] = 'broadcast'
         matlab.get_variable(client_id, decoded_msg['args'])
@@ -51,6 +55,15 @@ def dispatch(client_id, msg):
                 print "Putting it in", connected_clients[uid]['name']
                 var_name = get_name(decoded_msg)
                 connected_clients[uid]['queue'].put((var_name, decoded_pymat_response['result']))
+
+        # If we are sending to only one recipient
+        elif connected_clients[client_id]['last_command'] == 'send':
+            # Push the variable to the recipient
+            recipient_name = decoded_msg['meta']['recipient_name']
+            var_name = get_name(decoded_msg)
+            for uid in connected_clients:
+                if connected_clients[uid]['name'] == recipient_name:
+                    connected_clients[uid]['queue'].put((var_name, decoded_pymat_response['result']))
 
         else:
             pass
