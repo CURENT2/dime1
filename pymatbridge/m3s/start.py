@@ -21,19 +21,19 @@ def dispatch(client_id, msg):
             matlab.get_variable(client_id, decoded_msg['args'])
         else:
             # Run some code and send a variable
-            if connected_clients[client_id]['name'] == 'simulator':
-                #matlab.run_code(client_id, 'g = randn')
-                matlab.set_variable(client_id, 'g', 83)
-            else:
-                # See if the clients have anything in their queues
-                try:
-                    message_to_send = connected_clients[client_id]['queue'].get(False)
-                    # The first value in message_to_send is the variable's name
-                    matlab.set_variable(client_id, message_to_send[0], message_to_send[1])
-                    print "Sending message to ", connected_clients[client_id]['name']
-                except Queue.Empty:
-                    print "Nothing to send to ", connected_clients[client_id]['name']
-                    matlab.socket.send_multipart([client_id, '', 'OK'])
+            #if connected_clients[client_id]['name'] == 'simulator':
+            #    #matlab.run_code(client_id, 'g = randn')
+            #    matlab.set_variable(client_id, 'g', 83)
+            #else:
+            # See if the clients have anything in their queues
+            try:
+                message_to_send = connected_clients[client_id]['queue'].get(False)
+                # The first value in message_to_send is the variable's name
+                matlab.set_variable(client_id, message_to_send[0], message_to_send[1])
+                print "Sending message to ", connected_clients[client_id]['name']
+            except Queue.Empty:
+                print "Nothing to send to ", connected_clients[client_id]['name']
+                matlab.socket.send_multipart([client_id, '', 'OK'])
 
     if decoded_msg['command'] == 'send':
         connected_clients[client_id]['last_command'] = 'send'
@@ -42,6 +42,16 @@ def dispatch(client_id, msg):
     if decoded_msg['command'] == 'broadcast':
         connected_clients[client_id]['last_command'] = 'broadcast'
         matlab.get_variable(client_id, decoded_msg['args'])
+
+    if decoded_msg['command'] == 'get_devices':
+        connected_clients[client_id]['last_command'] = 'get_devices'
+        outgoing = {}
+        outgoing['response'] = []
+        for key in connected_clients:
+            outgoing['response'].append(connected_clients[key]['name'])
+
+        outgoing = matlab.json_encode(outgoing)
+        matlab.socket.send_multipart([client_id, '', outgoing])
 
     elif decoded_msg['command'] == 'response':
         decoded_pymat_response = matlab.json_decode(decoded_msg['args'])

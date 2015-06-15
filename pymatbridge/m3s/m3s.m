@@ -65,5 +65,13 @@ classdef m3s
             messenger('send', json_dump(outgoing));
             messenger('recv') % Receive an OK to set state back to "sender"
         end
+
+        function rep = get_devices()
+            outgoing = {};
+            outgoing.command = 'get_devices';
+            messenger('send', json_dump(outgoing));
+            rep = messenger('recv');
+            rep = json_load(rep);
+        end
     end
 end

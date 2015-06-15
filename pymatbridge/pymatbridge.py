@@ -292,6 +292,9 @@ class _Session(object):
     def json_decode(self, msg):
         return json.loads(msg, object_hook=decode_pymat)
 
+    def json_encode(self, msg):
+        return json.dumps(msg, cls=PymatEncoder)
+
     def run_func(self, client_id, func_path, *func_args, **kwargs):
         """Run a function in Matlab and return the result.
 
