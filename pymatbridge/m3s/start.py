@@ -28,7 +28,8 @@ def dispatch(client_id, msg):
                 # See if the clients have anything in their queues
                 try:
                     message_to_send = connected_clients[client_id]['queue'].get(False)
-                    matlab.set_variable(client_id, 'g', message_to_send)
+                    # The first value in message_to_send is the variable's name
+                    matlab.set_variable(client_id, message_to_send[0], message_to_send[1])
                     print "Sending message to ", connected_clients[client_id]['name']
                 except Queue.Empty:
                     print "Nothing to send to ", connected_clients[client_id]['name']
@@ -48,12 +49,21 @@ def dispatch(client_id, msg):
                 if uid == client_id:
                     continue
                 print "Putting it in", connected_clients[uid]['name']
-                connected_clients[uid]['queue'].put(decoded_pymat_response['result'])
+                var_name = get_name(decoded_msg)
+                connected_clients[uid]['queue'].put((var_name, decoded_pymat_response['result']))
 
         else:
             pass
         connected_clients[client_id]['last_command'] = 'response'
 
+def get_name(response):
+    print response['meta']
+    if 'meta' in response:
+        if 'var_name' in response['meta']:
+            return response['meta']['var_name']
+
+    # Return a default variable name if non found
+    return 'temp'
 
 def name_is_duplicate(name):
     """Check if this name is duplicate amongst connected clients."""

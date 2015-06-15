@@ -41,7 +41,8 @@ classdef m3s
                 % eval the code and send the response back
                 rep = pymat_eval(json_load(msg))
                 outgoing.command = 'response';
-                outgoing.args = rep;
+                outgoing.args = rep
+                outgoing.meta = struct('var_name', var_name)
                 messenger('send', json_dump(outgoing));
                 messenger('recv') % Receive an OK to set state back to "sender"
             end
