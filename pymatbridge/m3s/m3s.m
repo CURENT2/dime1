@@ -5,8 +5,12 @@ classdef m3s
             messenger('init', 'ipc:///tmp/m3c');
             messenger('send', name);
             response = messenger('recv')
+            % do something
+            if strcmp(response, 'DUPLICATE_NAME_ERROR')
+                messenger('exit')
+                fprintf('Please try again with a different name.\n')
+            end
         end
-
         function [] = sync(var_name)
             outgoing = {};
             if ~exist('var_name', 'var')

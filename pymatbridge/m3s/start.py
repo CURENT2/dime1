@@ -31,17 +31,17 @@ def name_is_duplicate(name):
     """Check if this name is duplicate amongst connected clients."""
 
     for key in connected_clients:
-        if connected_clients[key] == name: # changed from msg[2] to name
+        if connected_clients[key] == name:
             return True
 
     return False
 
 def print_connected():
-    """Prints client_id and name for each connected client."""
+    """Prints name of each connected client."""
 
     print "Clients include: "
     for key in connected_clients:
-        print "id: {} name: {}".format(key, connected_clients[key])
+        print connected_clients[key]
 
 if __name__ == '__main__':
     matlab = Matlab()
@@ -52,6 +52,11 @@ if __name__ == '__main__':
         msg = socket.recv_multipart()
         print "The following message was received: "
         print msg
+        if (msg[2] == 'exit'):
+            matlab.socket.send_multipart([msg[0], '', 'OK'])
+            if (msg[0] in connected_clients):
+                del connected_clients[msg[0]]
+            continue
         if (msg[0] in connected_clients):
             thread = Thread(target=dispatch, args=(msg[0], msg[2],))
             thread.start()
