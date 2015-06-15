@@ -1,27 +1,8 @@
-## **This fork has changed in order to accommodate the M3S architecture used for a distributed matlab simulating environment.**
-
-## Python-MATLAB(R) Bridge and IPython `matlab` magic
-
-A python interface to call out to [Matlab(R)](http://mathworks.com). Original
-implementation by [Max Jaderberg](http://www.maxjaderberg.com/). His original
-repo of the project can be found [here](
-https://github.com/jaderberg/python-matlab-bridge), but please note that the
-development of the two repositories has significantly diverged.
-
-This implementation also includes an [IPython](http://ipython.org) `matlab_magic`
-extension, which provides a simple interface for weaving python and
-Matlab code together (requires ipython > 0.13).
-
+### M3S is a distributed MATLAB environment that helps with the communication between a simulator and multiple modules. M3S uses the some codes from the Python-Matlab-Bridge project from [https://github.com/arokem/python-matlab-bridge/](https://github.com/arokem/python-matlab-bridge/)
 
 ## Installation
 
-`pymatbridge` can be installed from [PyPI][1]:
-
-```
-$ pip install pymatbridge  # sudo may be needed
-```
-
-`pymatbridge` communicates with Matlab using zeromq. So before installing
+`M3S` communicates with Matlab using zeromq. So before installing
 pymatbridge you must have [zmq](http://zeromq.org/intro:get-the-software)
 library and [pyzmq](http://zeromq.org/bindings:python) installed on your
 machine. These can be installed using
@@ -36,12 +17,6 @@ using:
 $ pip install numpy
 ```
 
-If you intend to use the Matlab magic extension, you'll also need
-[IPython](http://ipython.org/install.html).
-
-Note thatIPython notebooks also depend on `pyzmq` so if you have IPython notebooks
-installed, you likely have `pyzmq` already.
-
 Finally, if you want to handle sparse arrays, you will need to install
 [Scipy](http://scipy.org/). This can also be installed from PyPI, or using
 distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
@@ -49,107 +24,7 @@ distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
 
 
 ## Usage
-
-To use the pymatbridge you need to connect your python interpreter to a Matlab
-session. This is done in the following manner:
-
-    from pymatbridge import Matlab
-    mlab = Matlab()
-
-This creates a matlab session class instance, into which you will be able to
-inject code and variables, and query for results. By default, when you use
-`start`, this will open whatever gets called when you type `matlab`
-in your Terminal, but you can also specify the location of your Matlab
-application when initializing your matlab session class:
-
-    mlab = Matlab(executable='/Applications/MATLAB_R2011a.app/bin/matlab')
-
-You can then start the Matlab server, which will kick off your matlab session,
-and create the connection between your Python interpreter and this session:
-
-    mlab.start()
-
-which will return True once connected.
-
-    results = mlab.run_code('a=1;')
-
-Should now run that line of code and return a `results` dict into your Python
-namespace. The `results` dict contains the following fields:
-
-    {u'content': {u'code': u'a=1',
-     u'datadir': u'/private/tmp/MatlabData/',
-     u'figures': [],
-     u'stdout': u'\na =\n\n     1\n\n'},
-     u'success': u'true'}
-
-In this case, the variable `a` is available on the Python side, by using
-the `get_variable` method:
-
-    mlab.get_variable('a')
-
-You can run any MATLAB functions contained within a .m file of the
-same name. For example, to call the function jk in jk.m:
-
-    %% MATLAB
-    function lol = jk(args)
-        arg1 = args.arg1;
-        arg2 = args.arg2;
-        lol = arg1 + arg2;
-    end
-
-you would call:
-
-    res = mlab.run_func('path/to/jk.m', {'arg1': 3, 'arg2': 5})
-    print(res['result'])
-
-This would print `8`.
-
-You can shut down the MATLAB server by calling:
-
-    mlab.stop()
-
-Tip: you can execute MATLAB code at the beginning of each of your matlab
-sessions by adding code to the `~/startup.m` file.
-
-### Octave support & caveats
-
-A `pymatbridge.Octave` class is provided with exactly the same interface
-as `pymatbridge.Matlab`:
-
-    from pymatbridge import Octave
-    octave = Octave()
-
-Rather than looking for `matlab` at the shell, this will look for `octave`.
-As with `pymatbridge.Matlab`, you can override this by specifying the
-`executable` keyword argument.
-
-Rather than `~/startup.m`, Octave looks for an `~/.octaverc` file for
-commands to execute before every session. (This is a good place to manipulate
-the runtime path, for example).
-
-Requires Version 3.8 or higher.  Notice: Neither the MXE 3.8.1 nor the Cygwin 3.8.2 version is compatible on Windows.  No Windows support will be available
-until a working version of Octave 3.8+ with Java support is released.
-
-
-### Matlab magic:
-
-The Matlab magic allows you to use pymatbridge in the context of the IPython
-notebook format.
-
-    %load_ext pymatbridge
-
-These lines will automatically start the matlab session for you. Then, you can
-simply decorate a line/cell with the '%matlab' or '%%matlab' decorator and
-write matlab code:
-
-    %%matlab
-    a = linspace(0.01,6*pi,100);
-    plot(sin(a))
-    grid on
-    hold on
-    plot(cos(a),'r')
-
-More examples are provided in the `examples` directory
+`TODO`
 
 ## Building the pymatbridge messenger from source
 
@@ -221,35 +96,5 @@ After step 1 is finished, please grab the latest version of
 [pyzmq](http://zeromq.org/bindings:python) and follow the instructions on the official
 page. Note that pymatbridge is developed with pyzmq 14.0.0 and older versions might not
 be supported. If you have an old version of pyzmq, please update it.
-
-### Install pymatbridge
-After the steps above are done, you can install pymatbridge. Download the zip file of the
-latest release. Unzip it somewhere on your machine.
-
-For Matlab:
-
-	cd messenger
-    # edit local.cfg in the directory for your platform
-	python make.py matlab
-	cd ..
-	python setup.py install
-
-
-For Octave:
-
-    cd messenger/octave
-    # edit local_octave.cfg in the directory for your platform
-    python make.py octave
-    cd ..
-    python setup.py
-
-This should make the python-matlab-bridge import-able.
-
-
-### Warnings
-
-Python communicates with Matlab via an ad-hoc zmq messenger. This is inherently
-insecure, as the Matlab instance may be directed to perform arbitrary system
-calls. There is no sandboxing of any kind. Use this code at your own risk.
 
 [1]: https://pypi.python.org/pypi/pymatbridge
