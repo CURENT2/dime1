@@ -292,6 +292,9 @@ class _Session(object):
     def json_decode(self, msg):
         return json.loads(msg, object_hook=decode_pymat)
 
+    def json_encode(self, msg):
+        return json.dumps(msg, cls=PymatEncoder)
+
     def run_func(self, client_id, func_path, *func_args, **kwargs):
         """Run a function in Matlab and return the result.
 
@@ -345,10 +348,10 @@ class _Session(object):
         return resp
         # return resp['result'] if resp['success'] else default
 
-    def set_variable(self, varname, value):
+    def set_variable(self, client_id, varname, value):
         if isinstance(value, spmatrix):
             return self._set_sparse_variable(varname, value)
-        return self.run_func('assignin', 'base', varname, value, nargout=0)
+        return self.run_func(client_id, 'assignin', 'base', varname, value, nargout=0)
 
     def set_plot_settings(self, width=512, height=384, inline=True):
         if inline:
