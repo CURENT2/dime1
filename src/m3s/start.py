@@ -12,6 +12,7 @@ connected_clients = {}
 def dispatch(client_id, msg):
     """Perform a sequence of things on the client in a separate thread."""
     decoded_msg = matlab.json_decode(msg)
+    print decoded_msg
     if 'command' not in decoded_msg:
         # panic for now!
         return
@@ -91,7 +92,7 @@ def get_name(response):
 def name_is_duplicate(name):
     """Check if this name is duplicate amongst connected clients."""
     for key in connected_clients:
-        if connected_clients[key] == name: # changed from msg[2] to name
+        if connected_clients[key]['name'] == name:
             return True
 
     return False
@@ -100,7 +101,7 @@ def print_connected():
     """Prints client_id and name for each connected client."""
     print "Clients include: "
     for key in connected_clients:
-        print connected_clients[key]
+        print connected_clients[key]['name']
 
 if __name__ == '__main__':
     matlab = Matlab()
@@ -111,25 +112,25 @@ if __name__ == '__main__':
         msg = socket.recv_multipart()
         uid = msg[0]
         client_name = msg[2]
-        print "The following message was received: "
-        print msg
-        if (client_name == 'exit'): # Check for exit signal
-            matlab.socket.send_multipart(uid, '', 'OK'])
+        if client_name == 'exit': # Check for exit signal
+            matlab.socket.send_multipart([uid, '', 'OK'])
             if (uid in connected_clients):
                 del connected_clients[uid]
             continue
-        if (uid in connected_clients):
+        if uid in connected_clients:
             thread = Thread(target=dispatch, args=(uid, client_name,))
             thread.start()
         else:
             if name_is_duplicate(client_name) == False:
                 connected_clients[uid] = {}
-                connected_clients[uid]['name'] = msg[2]
+                connected_clients[uid]['name'] = client_name
                 connected_clients[uid]['queue'] = Queue.Queue()
                 connected_clients[uid]['last_command'] = ''
                 socket.send_multipart([uid, '', 'CONNECTED'])
+                print "New client with name {} now connected".format(client_name)
             else:
                 # Send a no message if we have a duplicate name
+                print "Duplicate name received"
                 socket.send_multipart([uid, '', 'DUPLICATE_NAME_ERROR'])
 
         time.sleep(0.1)

@@ -12,7 +12,7 @@ classdef m3s
             response = messenger('recv')
             % do something
             if strcmp(response, 'DUPLICATE_NAME_ERROR')
-                exit()
+                messenger('exit')
                 fprintf('Please try again with a different name.\n')
             end
         end
@@ -23,14 +23,14 @@ classdef m3s
             outgoing.command = 'sync';
             outgoing.args = '';
             messenger('send', json_dump(outgoing));
-            msg = messenger('recv')
+            msg = messenger('recv');
 
             % Send the response back as a response command
             rep = pymat_eval(json_load(msg))
             outgoing.command = 'response';
             outgoing.args = rep;
             messenger('send', json_dump(outgoing));
-            messenger('recv') % Receive an OK to set state back to "sender"
+            messenger('recv'); % Receive an OK to set state back to "sender"
         end
 
         function [] = broadcast(var_name)
@@ -38,15 +38,15 @@ classdef m3s
             outgoing.command = 'broadcast';
             outgoing.args = var_name;
             messenger('send', json_dump(outgoing));
-            msg = messenger('recv')
+            msg = messenger('recv');
 
             % eval the code and send the response back
             rep = pymat_eval(json_load(msg))
             outgoing.command = 'response';
-            outgoing.args = rep
-            outgoing.meta = struct('var_name', var_name)
+            outgoing.args = rep;
+            outgoing.meta = struct('var_name', var_name);
             messenger('send', json_dump(outgoing));
-            messenger('recv') % Receive an OK to set state back to "sender"
+            messenger('recv'); % Receive an OK to set state back to "sender"
         end
 
         function [] = send_var(recipient_name, var_name)
@@ -55,16 +55,16 @@ classdef m3s
             outgoing.command = 'send';
             outgoing.args = var_name;
             messenger('send', json_dump(outgoing));
-            msg = messenger('recv')
+            msg = messenger('recv');
 
             % eval the code and send the response back
             rep = pymat_eval(json_load(msg))
             outgoing.command = 'response';
-            outgoing.args = rep
-            outgoing.meta = struct('var_name', var_name)
-            outgoing.meta.recipient_name = recipient_name
+            outgoing.args = rep;
+            outgoing.meta = struct('var_name', var_name);
+            outgoing.meta.recipient_name = recipient_name;
             messenger('send', json_dump(outgoing));
-            messenger('recv') % Receive an OK to set state back to "sender"
+            messenger('recv'); % Receive an OK to set state back to "sender"
         end
 
         function rep = get_devices()
