@@ -17,20 +17,34 @@ classdef m3s
             end
         end
 
-        function [] = sync()
-            outgoing = {};
-            % Ask Python if it has anything to send
-            outgoing.command = 'sync';
-            outgoing.args = '';
-            messenger('send', json_dump(outgoing));
-            msg = messenger('recv');
-
-            % Send the response back as a response command
-            rep = pymat_eval(json_load(msg))
-            outgoing.command = 'response';
-            outgoing.args = rep;
-            messenger('send', json_dump(outgoing));
-            messenger('recv'); % Receive an OK to set state back to "sender"
+        function [] = sync(max_iterations)
+            if (nargin < 1)
+                max_iterations = 3;
+            end
+            counter = max_iterations;
+            while(true) 
+                outgoing = {};
+                % Ask Python if it has anything to send
+                outgoing.command = 'sync';
+                outgoing.args = '';
+                messenger('send', json_dump(outgoing));
+                msg = messenger('recv');
+                if strcmp(msg, 'COMPLETE')
+                    fprintf('Message queue empty. Exiting sync.\n')
+                    break;
+                end
+                if counter <= 0
+                    fprintf('Iteration max exceeded. Exiting sync.\n')
+                    break;
+                end
+                % Send the response back as a response command
+                rep = pymat_eval(json_load(msg));
+                outgoing.command = 'response';
+                outgoing.args = rep;
+                messenger('send', json_dump(outgoing));
+                messenger('recv');
+                counter = counter - 1;
+            end
         end
 
         function [] = broadcast(var_name)

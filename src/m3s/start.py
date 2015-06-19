@@ -12,7 +12,6 @@ connected_clients = {}
 def dispatch(client_id, msg):
     """Perform a sequence of things on the client in a separate thread."""
     decoded_msg = matlab.json_decode(msg)
-    print decoded_msg
     if 'command' not in decoded_msg:
         # panic for now!
         return
@@ -21,20 +20,17 @@ def dispatch(client_id, msg):
         if decoded_msg['args'] != '':
             matlab.get_variable(client_id, decoded_msg['args'])
         else:
-            # Run some code and send a variable
-            #if connected_clients[client_id]['name'] == 'simulator':
-            #    #matlab.run_code(client_id, 'g = randn')
-            #    matlab.set_variable(client_id, 'g', 83)
-            #else:
             # See if the clients have anything in their queues
-            try:
+            if connected_clients[client_id]['queue'].empty():
+                print "{}'s queue is empty".format(connected_clients[client_id]['name'])
+                matlab.socket.send_multipart([client_id, '', 'COMPLETE'])
+            else:
                 message_to_send = connected_clients[client_id]['queue'].get(False)
                 # The first value in message_to_send is the variable's name
                 matlab.set_variable(client_id, message_to_send[0], message_to_send[1])
                 print "Sending message to ", connected_clients[client_id]['name']
-            except Queue.Empty:
-                print "Nothing to send to ", connected_clients[client_id]['name']
-                matlab.socket.send_multipart([client_id, '', 'OK'])
+                # if connected_clients[client_id]['queue'].empty():
+                #     matlab.socket.send_multipart([client_id, '', 'COMPLETE'])
 
     if decoded_msg['command'] == 'send':
         connected_clients[client_id]['last_command'] = 'send'
@@ -57,14 +53,13 @@ def dispatch(client_id, msg):
     elif decoded_msg['command'] == 'response':
         decoded_pymat_response = matlab.json_decode(decoded_msg['args'])
         matlab.socket.send_multipart([client_id, '', 'OK'])
-        print decoded_pymat_response['result']
         if connected_clients[client_id]['last_command'] == 'broadcast':
             # Push the variable to all other client queues
             for uid in connected_clients:
                 if uid == client_id:
                     continue
-                print "Putting it in", connected_clients[uid]['name']
                 var_name = get_name(decoded_msg)
+                print "Adding {} to {}'s queue".format(var_name, connected_clients[uid]['name'])
                 connected_clients[uid]['queue'].put((var_name, decoded_pymat_response['result']))
 
         # If we are sending to only one recipient
@@ -75,13 +70,13 @@ def dispatch(client_id, msg):
             for uid in connected_clients:
                 if connected_clients[uid]['name'] == recipient_name:
                     connected_clients[uid]['queue'].put((var_name, decoded_pymat_response['result']))
+                    print "Adding {} to {}'s queue".format(var_name, connected_clients[uid]['name'])
 
         else:
             pass
         connected_clients[client_id]['last_command'] = 'response'
 
 def get_name(response):
-    print response['meta']
     if 'meta' in response:
         if 'var_name' in response['meta']:
             return response['meta']['var_name']
@@ -114,6 +109,7 @@ if __name__ == '__main__':
         client_name = msg[2]
         if client_name == 'exit': # Check for exit signal
             matlab.socket.send_multipart([uid, '', 'OK'])
+            print "Exit signal received from a client"
             if (uid in connected_clients):
                 del connected_clients[uid]
             continue
