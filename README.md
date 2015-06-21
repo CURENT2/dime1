@@ -7,13 +7,13 @@ pymatbridge you must have [zmq](http://zeromq.org/intro:get-the-software)
 library and [pyzmq](http://zeromq.org/bindings:python) installed on your
 machine. These can be installed using
 
-```
+```python
 $ pip install pyzmq
 ```
 You will also need  [Numpy](http://www.numpy.org/), which can be installed
 using:
 
-```
+```python
 $ pip install numpy
 ```
 
@@ -24,7 +24,47 @@ distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
 
 
 ## Usage
-`TODO`
+1. Go to `./src/m3s/` and run `start.py`
+1. Run a matlab instance and add the M3S repository to its path.
+```matlab
+addpath(genpath('<Path to the M3S directory>'))
+```
+1. Run `m3s.start('<name of matlab session>')` in Matlab. For example if you intend to use it as a simulator, you would run:
+```matlab
+m3s.start('simulator')
+```
+or if it's a module called control_module1, you would write:
+```matlab
+m3s.start('control_module1')
+```
+1. The methods are ready to be used.
+
+## Methods
+These are the Matlab side methods that are provided for sending and receiving information from the server.
+```matlab
+% Sends a variable to a specific module
+m3s.send_var('<recipient name>', '<name of variable to send>')
+```
+
+```matlab
+% Sends a variable to all connected modules
+m3s.broadcast('<name of variable to send>')
+```
+
+```matlab
+% Checks to see if there's anything from the server and receives them.
+m3s.sync()
+```
+
+```matlab
+% Returns the names of all the connected clients
+m3s.get_devices()
+```
+
+```matlab
+% Exits and ends the session with the server
+m3s.exit()
+```
 
 ## Building the pymatbridge messenger from source
 
