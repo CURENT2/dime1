@@ -24,12 +24,12 @@ distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
 
 
 ## Usage
-1. Go to `./src/m3s/` and run `start.py`
-1. Run a matlab instance and add the M3S repository to its path.
+- Go to `./src/m3s/` and run `start.py`
+- Run a matlab instance and add the M3S repository to its path.
 ```matlab
 addpath(genpath('<Path to the M3S directory>'))
 ```
-1. Run `m3s.start('<name of matlab session>')` in Matlab. For example if you intend to use it as a simulator, you would run:
+- Run `m3s.start('<name of matlab session>')` in Matlab. For example if you intend to use it as a simulator, you would run:
 ```matlab
 m3s.start('simulator')
 ```
@@ -37,7 +37,7 @@ or if it's a module called control_module1, you would write:
 ```matlab
 m3s.start('control_module1')
 ```
-1. The methods are ready to be used.
+- The methods are ready to be used.
 
 ## Methods
 These are the Matlab side methods that are provided for sending and receiving information from the server.
