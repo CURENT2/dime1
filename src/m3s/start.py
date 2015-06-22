@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import time
-import pprint
 import threading
 import pymatbridge
 import Queue

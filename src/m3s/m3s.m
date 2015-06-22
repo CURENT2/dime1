@@ -60,7 +60,7 @@ classdef m3s
                 msg = messenger('recv');
 
               % eval the code and send the response back
-                rep = pymat_eval(json_load(msg))
+                rep = pymat_eval(json_load(msg));
                 outgoing.command = 'response';
                 outgoing.args = rep;
                 outgoing.meta = struct('var_name', var_name);
@@ -80,7 +80,7 @@ classdef m3s
                 msg = messenger('recv');
 
                 % eval the code and send the response back
-                rep = pymat_eval(json_load(msg))
+                rep = pymat_eval(json_load(msg));
                 outgoing.command = 'response';
                 outgoing.args = rep;
                 outgoing.meta = struct('var_name', var_name);
