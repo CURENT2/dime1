@@ -36,10 +36,6 @@ classdef m3s
                     fprintf('Message queue empty. Exiting sync.\n')
                     break;
                 end
-                if counter <= 0
-                    fprintf('Iteration max exceeded. Exiting sync.\n')
-                    break;
-                end
                 % Send the response back as a response command
                 rep = pymat_eval(json_load(msg));
                 outgoing.command = 'response';
@@ -47,6 +43,10 @@ classdef m3s
                 messenger('send', json_dump(outgoing));
                 messenger('recv');
                 counter = counter - 1;
+                if counter <= 0
+                    fprintf('Iteration max exceeded. Exiting sync.\n')
+                    break;
+                end
             end
         end
 
@@ -69,22 +69,25 @@ classdef m3s
             end
         end
 
-        function [] = send_var(recipient_name, var_name)
+        function [] = send_var(recipient_name, varargin)
             % Tell Python to pick a variable
-            outgoing = {};
-            outgoing.command = 'send';
-            outgoing.args = var_name;
-            messenger('send', json_dump(outgoing));
-            msg = messenger('recv');
+            for i = 1:length(varargin)
+                var_name = varargin{i};
+                outgoing = {};
+                outgoing.command = 'send';
+                outgoing.args = var_name;
+                messenger('send', json_dump(outgoing));
+                msg = messenger('recv');
 
-            % eval the code and send the response back
-            rep = pymat_eval(json_load(msg))
-            outgoing.command = 'response';
-            outgoing.args = rep;
-            outgoing.meta = struct('var_name', var_name);
-            outgoing.meta.recipient_name = recipient_name;
-            messenger('send', json_dump(outgoing));
-            messenger('recv'); % Receive an OK to set state back to "sender"
+                % eval the code and send the response back
+                rep = pymat_eval(json_load(msg))
+                outgoing.command = 'response';
+                outgoing.args = rep;
+                outgoing.meta = struct('var_name', var_name);
+                outgoing.meta.recipient_name = recipient_name;
+                messenger('send', json_dump(outgoing));
+                messenger('recv'); % Receive an OK to set state back to "sender"
+            end
         end
 
         function rep = get_devices()
