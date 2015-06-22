@@ -35,7 +35,7 @@ int initialize(char *socket_addr, int connect_to_existing_socket) {
     }
 }
 
-/* Check if the ZMQ server is intialized and print an error if not */
+/* Check if the ZMQ server is initialized and print an error if not */
 int checkInitialized(void) {
     if (!initialized) {
         mexErrMsgTxt("Error: ZMQ session not initialized");
@@ -51,6 +51,8 @@ int checkInitialized(void) {
 void cleanup (void) {
     /* Send a confirmation message to the client */
     zmq_send(socket_ptr, "exit", 4, 0);
+    char *recv_buffer = mxCalloc(BUFLEN, sizeof(char));
+    zmq_recv(socket_ptr, recv_buffer, BUFLEN, 0);
     zmq_close(socket_ptr);
     mexPrintf("Socket closed\n");
     zmq_term(ctx);
