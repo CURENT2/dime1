@@ -22,15 +22,16 @@ def dispatch(client_id, msg):
         else:
             # See if the clients have anything in their queues
             if connected_clients[client_id]['queue'].empty():
-                print "{}'s queue is empty".format(connected_clients[client_id]['name'])
+                print "{}'s queue is empty".format(
+                    connected_clients[client_id]['name'])
                 matlab.socket.send_multipart([client_id, '', 'COMPLETE'])
             else:
-                message_to_send = connected_clients[client_id]['queue'].get(False)
+                message_to_send=connected_clients[client_id]['queue'].get(False)
                 # The first value in message_to_send is the variable's name
-                matlab.set_variable(client_id, message_to_send[0], message_to_send[1])
-                print "Sending message to ", connected_clients[client_id]['name']
-                # if connected_clients[client_id]['queue'].empty():
-                #     matlab.socket.send_multipart([client_id, '', 'COMPLETE'])
+                matlab.set_variable(client_id, message_to_send[0], 
+                    message_to_send[1])
+                print "Sending message to ", \
+                    connected_clients[client_id]['name']
 
     if decoded_msg['command'] == 'send':
         connected_clients[client_id]['last_command'] = 'send'
@@ -59,8 +60,10 @@ def dispatch(client_id, msg):
                 if uid == client_id:
                     continue
                 var_name = get_name(decoded_msg)
-                print "Adding {} to {}'s queue".format(var_name, connected_clients[uid]['name'])
-                connected_clients[uid]['queue'].put((var_name, decoded_pymat_response['result']))
+                print "Adding {} to {}'s queue".format(var_name, 
+                    connected_clients[uid]['name'])
+                connected_clients[uid]['queue'].put((var_name, 
+                    decoded_pymat_response['result']))
 
         # If we are sending to only one recipient
         elif connected_clients[client_id]['last_command'] == 'send':
@@ -69,8 +72,10 @@ def dispatch(client_id, msg):
             var_name = get_name(decoded_msg)
             for uid in connected_clients:
                 if connected_clients[uid]['name'] == recipient_name:
-                    connected_clients[uid]['queue'].put((var_name, decoded_pymat_response['result']))
-                    print "Adding {} to {}'s queue".format(var_name, connected_clients[uid]['name'])
+                    connected_clients[uid]['queue'].put((var_name, 
+                        decoded_pymat_response['result']))
+                    print "Adding {} to {}'s queue".format(var_name, 
+                        connected_clients[uid]['name'])
 
         else:
             pass
@@ -81,7 +86,7 @@ def get_name(response):
         if 'var_name' in response['meta']:
             return response['meta']['var_name']
 
-    # Return a default variable name if non found
+    # Return a default variable name if not found
     return 'temp'
 
 def name_is_duplicate(name):
@@ -123,7 +128,8 @@ if __name__ == '__main__':
                 connected_clients[uid]['queue'] = Queue.Queue()
                 connected_clients[uid]['last_command'] = ''
                 socket.send_multipart([uid, '', 'CONNECTED'])
-                print "New client with name {} now connected".format(client_name)
+                print "New client with name {} now connected"\
+                    .format(client_name)
             else:
                 # Send a no message if we have a duplicate name
                 print "Duplicate name received"

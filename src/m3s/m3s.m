@@ -5,9 +5,12 @@ classdef m3s
             messenger('exit')
         end
         
-        function [] = start(name)
+        function [] = start(name, address)
+            if (nargin < 2)
+                address = 'ipc:///tmp/m3c';
+            end
             json_startup;
-            messenger('init', 'ipc:///tmp/m3c');
+            messenger('init', address);
             messenger('send', name);
             response = messenger('recv')
             % do something
@@ -47,20 +50,23 @@ classdef m3s
             end
         end
 
-        function [] = broadcast(var_name)
-            outgoing = {};
-            outgoing.command = 'broadcast';
-            outgoing.args = var_name;
-            messenger('send', json_dump(outgoing));
-            msg = messenger('recv');
+        function [] = broadcast(varargin)
+            for i = 1:length(varargin)
+                var_name = varargin{i};
+                outgoing = {};
+                outgoing.command = 'broadcast';
+                outgoing.args = var_name;
+                messenger('send', json_dump(outgoing));
+                msg = messenger('recv');
 
-            % eval the code and send the response back
-            rep = pymat_eval(json_load(msg))
-            outgoing.command = 'response';
-            outgoing.args = rep;
-            outgoing.meta = struct('var_name', var_name);
-            messenger('send', json_dump(outgoing));
-            messenger('recv'); % Receive an OK to set state back to "sender"
+              % eval the code and send the response back
+                rep = pymat_eval(json_load(msg))
+                outgoing.command = 'response';
+                outgoing.args = rep;
+                outgoing.meta = struct('var_name', var_name);
+                messenger('send', json_dump(outgoing));
+                messenger('recv'); % Receive an OK to set state back to "sender"
+            end
         end
 
         function [] = send_var(recipient_name, var_name)
