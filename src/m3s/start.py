@@ -134,4 +134,4 @@ if __name__ == '__main__':
                 print "Duplicate name received"
                 socket.send_multipart([uid, '', 'DUPLICATE_NAME_ERROR'])
 
-        time.sleep(0.1)
+        # time.sleep(0.1)
