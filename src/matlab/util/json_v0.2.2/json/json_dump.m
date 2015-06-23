@@ -63,7 +63,7 @@ function str = json_dump(value, varargin)
 % mapped to the same json string '[1,2]'.
 %
 % See also json.load json.write
-  json_startup('WarnOnAddpath', true);
+  % MOA::json_startup('WarnOnAddpath', true);
   options = get_options_(varargin{:});
   obj = dump_data_(value, options);
   if isempty(options.indent)

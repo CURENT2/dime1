@@ -1,4 +1,4 @@
-### M3S is a distributed MATLAB environment that helps with the communication between a simulator and multiple modules. M3S uses the some codes from the Python-Matlab-Bridge project from [https://github.com/arokem/python-matlab-bridge/](https://github.com/arokem/python-matlab-bridge/)
+### M3S is a distributed MATLAB environment that helps with the communication between a simulator and multiple modules. M3S uses some codes from the Python-Matlab-Bridge project from [https://github.com/arokem/python-matlab-bridge/](https://github.com/arokem/python-matlab-bridge/)
 
 ## Installation
 
