@@ -197,7 +197,7 @@ class _Session(object):
                          stdout=subprocess.PIPE)
 
     # Start server/client session and make the connection
-    def start(self, connect_to_running_instance, act_as_server):
+    def start(self, connect_to_running_instance, act_as_server, address):
         # Setup socket
         self.context = zmq.Context()
 
@@ -213,7 +213,7 @@ class _Session(object):
 
         if connect_to_running_instance == True:
             print("Not starting instance");
-            self.socket_addr = "ipc:///tmp/m3c"
+            self.socket_addr = address
         else:
             # Start the MATLAB server in a new process
             print("Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr))
