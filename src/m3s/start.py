@@ -126,6 +126,14 @@ if __name__ == '__main__':
                 connected_clients[uid]['name'] = client_name
                 connected_clients[uid]['queue'] = Queue.Queue()
                 connected_clients[uid]['last_command'] = ''
+
+                if 'python' in client_name:
+	            #Scrap the matlab socket and instead make a python one
+		    connected_clients[uid]['type'] = 'python'
+		    print 'Python detected -- using different socket'
+                    continue
+
+		connected_clients[uid]['type'] = 'matlab'
                 socket.send_multipart([uid, '', 'CONNECTED'])
                 print "New client with name {} now connected"\
                     .format(client_name)
