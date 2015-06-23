@@ -3,8 +3,10 @@ import time
 import threading
 import pymatbridge
 import Queue
+import argparse
 from threading import Thread
 from pymatbridge import Matlab
+
 
 connected_clients = {}
 
@@ -103,8 +105,15 @@ def print_connected():
         print connected_clients[key]['name']
 
 if __name__ == '__main__':
+    #Check for address specification in command line
+    parser = argparse.ArgumentParser()
+    parser.add_argument('address', nargs='?', default='ipc:///tmp/m3c', help='input the server address here')
+    args = parser.parse_args()
+    address = args.address
+    print "Server on the following address: {}".format(address)
+    
     matlab = Matlab()
-    matlab.start(True, True) # Don't start a new instance and let matlab connect
+    matlab.start(True, True, address) # Don't start a new instance and let matlab connect
     socket = matlab.socket
 
     while True:
