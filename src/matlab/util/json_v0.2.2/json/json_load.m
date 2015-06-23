@@ -57,7 +57,7 @@ function value = json_load(str, varargin)
 %
 % See also json.dump json.read
 
-  json_startup('WarnOnAddpath', true);
+  % MOA::json_startup('WarnOnAddpath', true);
   options = get_options_(varargin{:});
   singleton = false;
 
