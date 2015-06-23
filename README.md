@@ -1,8 +1,8 @@
-### M3S is a distributed MATLAB environment that helps with the communication between a simulator and multiple modules. M3S uses some codes from the Python-Matlab-Bridge project from [https://github.com/arokem/python-matlab-bridge/](https://github.com/arokem/python-matlab-bridge/)
+### DiME is a Distributed Matlab Environment that helps with the communication between a simulator and multiple modules. DiME uses some codes from the Python-Matlab-Bridge project from [https://github.com/arokem/python-matlab-bridge/](https://github.com/arokem/python-matlab-bridge/)
 
 ## Installation
 
-`M3S` communicates with Matlab using zeromq. So before installing
+`DiME` communicates with Matlab using zeromq. So before installing
 pymatbridge you must have [zmq](http://zeromq.org/intro:get-the-software)
 library and [pyzmq](http://zeromq.org/bindings:python) installed on your
 machine. These can be installed using
@@ -24,18 +24,18 @@ distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
 
 
 ## Usage
-- Go to `./src/m3s/` and run `start.py`
-- Run a matlab instance and add the M3S repository to its path.
+- Go to `./src/dime/` and run `start.py`
+- Run a matlab instance and add the DiME repository to its path.
 ```matlab
-addpath(genpath('<Path to the M3S directory>'))
+addpath(genpath('<Path to the project directory>'))
 ```
-- Run `m3s.start('<name of matlab session>')` in Matlab. For example if you intend to use it as a simulator, you would run:
+- Run `dime.start('<name of matlab session>')` in Matlab. For example if you intend to use it as a simulator, you would run:
 ```matlab
-m3s.start('simulator')
+dime.start('simulator')
 ```
 or if it's a module called control_module1, you would write:
 ```matlab
-m3s.start('control_module1')
+dime.start('control_module1')
 ```
 - The methods are ready to be used.
 
@@ -43,27 +43,27 @@ m3s.start('control_module1')
 These are the Matlab side methods that are provided for sending and receiving information from the server.
 ```matlab
 % Sends a variable to a specific module
-m3s.send_var('<recipient name>', '<name of variable to send>')
+dime.send_var('<recipient name>', '<name of variable to send>')
 ```
 
 ```matlab
 % Sends a variable to all connected modules
-m3s.broadcast('<name of variable to send>')
+dime.broadcast('<name of variable to send>')
 ```
 
 ```matlab
 % Checks to see if there's anything from the server and receives them.
-m3s.sync()
+dime.sync()
 ```
 
 ```matlab
 % Returns the names of all the connected clients
-m3s.get_devices()
+dime.get_devices()
 ```
 
 ```matlab
 % Exits and ends the session with the server
-m3s.exit()
+dime.exit()
 ```
 
 ## Building the pymatbridge messenger from source
