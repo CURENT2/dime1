@@ -1,13 +1,13 @@
-classdef m3s
+classdef dime
     methods(Static)
-        
+
         function [] = exit()
             messenger('exit')
         end
-        
+
         function [] = start(name, address)
             if (nargin < 2)
-                address = 'ipc:///tmp/m3c';
+                address = 'ipc:///tmp/dime';
             end
             json_startup;
             messenger('init', address);
@@ -25,7 +25,7 @@ classdef m3s
                 max_iterations = 3;
             end
             counter = max_iterations;
-            while(true) 
+            while(true)
                 outgoing = {};
                 % Ask Python if it has anything to send
                 outgoing.command = 'sync';

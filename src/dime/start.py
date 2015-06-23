@@ -29,7 +29,7 @@ def dispatch(client_id, msg):
             else:
                 message_to_send=connected_clients[client_id]['queue'].get(False)
                 # The first value in message_to_send is the variable's name
-                matlab.set_variable(client_id, message_to_send[0], 
+                matlab.set_variable(client_id, message_to_send[0],
                     message_to_send[1])
                 print "Sending message to ", \
                     connected_clients[client_id]['name']
@@ -61,9 +61,9 @@ def dispatch(client_id, msg):
                 if uid == client_id:
                     continue
                 var_name = get_name(decoded_msg)
-                print "Adding {} to {}'s queue".format(var_name, 
+                print "Adding {} to {}'s queue".format(var_name,
                     connected_clients[uid]['name'])
-                connected_clients[uid]['queue'].put((var_name, 
+                connected_clients[uid]['queue'].put((var_name,
                     decoded_pymat_response['result']))
 
         # If we are sending to only one recipient
@@ -73,9 +73,9 @@ def dispatch(client_id, msg):
             var_name = get_name(decoded_msg)
             for uid in connected_clients:
                 if connected_clients[uid]['name'] == recipient_name:
-                    connected_clients[uid]['queue'].put((var_name, 
+                    connected_clients[uid]['queue'].put((var_name,
                         decoded_pymat_response['result']))
-                    print "Adding {} to {}'s queue".format(var_name, 
+                    print "Adding {} to {}'s queue".format(var_name,
                         connected_clients[uid]['name'])
 
         else:
@@ -107,11 +107,11 @@ def print_connected():
 if __name__ == '__main__':
     #Check for address specification in command line
     parser = argparse.ArgumentParser()
-    parser.add_argument('address', nargs='?', default='ipc:///tmp/m3c', help='input the server address here')
+    parser.add_argument('address', nargs='?', default='ipc:///tmp/dime', help='input the server address here')
     args = parser.parse_args()
     address = args.address
     print "Server on the following address: {}".format(address)
-    
+
     matlab = Matlab()
     matlab.start(True, True, address) # Don't start a new instance and let matlab connect
     socket = matlab.socket
@@ -150,5 +150,3 @@ if __name__ == '__main__':
                 # Send a no message if we have a duplicate name
                 print "Duplicate name received"
                 socket.send_multipart([uid, '', 'DUPLICATE_NAME_ERROR'])
-
-        # time.sleep(0.1)
