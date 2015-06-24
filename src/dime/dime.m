@@ -10,9 +10,15 @@ classdef dime
                 address = 'ipc:///tmp/dime';
             end
             json_startup;
-            messenger('init', address);
-            messenger('send', name);
-            response = messenger('recv')
+            try
+                messenger('init', address);
+                messenger('send', name);
+                response = messenger('recv');
+            catch
+                % do something
+                fprintf('Start failed. Possibly socket is already open.\n')
+                return
+            end
             % do something
             if strcmp(response, 'DUPLICATE_NAME_ERROR')
                 messenger('exit')
@@ -20,12 +26,13 @@ classdef dime
             end
         end
 
-        function [] = sync(max_iterations)
+        function [flag] = sync(max_iterations)
             if (nargin < 1)
                 max_iterations = 3;
             end
             counter = max_iterations;
-            while(true)
+            flag = 1;  % Sync flag
+            while(counter)
                 outgoing = {};
                 % Ask Python if it has anything to send
                 outgoing.command = 'sync';
@@ -33,7 +40,6 @@ classdef dime
                 messenger('send', json_dump(outgoing));
                 msg = messenger('recv');
                 if strcmp(msg, 'COMPLETE')
-                    fprintf('Message queue empty. Exiting sync.\n')
                     break;
                 end
                 % Send the response back as a response command
@@ -43,10 +49,14 @@ classdef dime
                 messenger('send', json_dump(outgoing));
                 messenger('recv');
                 counter = counter - 1;
-                if counter <= 0
-                    fprintf('Iteration max exceeded. Exiting sync.\n')
-                    break;
-                end
+            end
+            if counter <= 0
+%                 fprintf('Iteration max exceeded. Exiting sync.\n');
+            elseif counter == max_iterations
+%                 fprintf('Nothing to sync.\n');
+                flag = 0;
+            else
+%                 fprintf('Sync complete.\n');
             end
         end
 

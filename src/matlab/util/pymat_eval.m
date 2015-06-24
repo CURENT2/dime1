@@ -15,7 +15,7 @@ response.success = true;
 response.content = '';
 response.result = '';
 
-close all hidden;
+% close all hidden;  % this command kills PSAT GUI
 
 try
 	% tempname is less likely to get bonked by another process.
