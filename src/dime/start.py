@@ -18,21 +18,18 @@ def dispatch(client_id, msg):
         return
     if decoded_msg['command'] == 'sync':
         connected_clients[client_id]['last_command'] = 'sync'
-        if decoded_msg['args'] != '':
-            matlab.get_variable(client_id, decoded_msg['args'])
+        # See if the clients have anything in their queues
+        if connected_clients[client_id]['queue'].empty():
+            print "{}'s queue is empty".format(
+                connected_clients[client_id]['name'])
+            matlab.socket.send_multipart([client_id, '', 'COMPLETE'])
         else:
-            # See if the clients have anything in their queues
-            if connected_clients[client_id]['queue'].empty():
-                print "{}'s queue is empty".format(
-                    connected_clients[client_id]['name'])
-                matlab.socket.send_multipart([client_id, '', 'COMPLETE'])
-            else:
-                message_to_send=connected_clients[client_id]['queue'].get(False)
-                # The first value in message_to_send is the variable's name
-                matlab.set_variable(client_id, message_to_send[0],
-                    message_to_send[1])
-                print "Sending message to ", \
-                    connected_clients[client_id]['name']
+            message_to_send=connected_clients[client_id]['queue'].get(False)
+            # The first value in message_to_send is the variable's name
+            matlab.set_variable(client_id, message_to_send[0],
+                message_to_send[1])
+            print "Sending message to ", \
+                connected_clients[client_id]['name']
 
     if decoded_msg['command'] == 'send':
         connected_clients[client_id]['last_command'] = 'send'

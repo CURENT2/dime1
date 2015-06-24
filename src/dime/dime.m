@@ -6,17 +6,20 @@ classdef dime
         end
 
         function [] = start(name, address)
-            if (nargin < 2)
-                address = 'ipc:///tmp/dime';
-            end
-            json_startup;
-            messenger('init', address);
-            messenger('send', name);
-            response = messenger('recv')
-            % do something
-            if strcmp(response, 'DUPLICATE_NAME_ERROR')
-                messenger('exit')
-                fprintf('Please try again with a different name.\n')
+            try
+                if (nargin < 2)
+                    address = 'ipc:///tmp/dime';
+                end
+                json_startup;
+                messenger('init', address);
+                messenger('send', name);
+                response = messenger('recv')
+                % do something
+                if strcmp(response, 'DUPLICATE_NAME_ERROR')
+                    messenger('exit')
+                    fprintf('Please try again with a different name.\n')
+                end
+            catch
             end
         end
 
