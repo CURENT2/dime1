@@ -212,7 +212,7 @@ class _Session(object):
             self.socket.unbind(self.socket_addr)
 
         if connect_to_running_instance == True:
-            print("Not starting instance");
+            # Not starting instance
             self.socket_addr = address
         else:
             # Start the MATLAB server in a new process
@@ -223,7 +223,6 @@ class _Session(object):
         if act_as_server == True:
             # Start the server
             self.socket.bind(self.socket_addr)
-            print "Acting as server"
         else:
             # Start the client
             print "Acting as client"

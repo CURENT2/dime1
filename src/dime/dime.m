@@ -6,14 +6,19 @@ classdef dime
         end
 
         function [] = start(name, address)
+            json_startup;
+
             if (nargin < 2)
                 address = 'ipc:///tmp/dime';
             end
-            json_startup;
             try
                 messenger('init', address);
-                messenger('send', name);
-                response = messenger('recv');
+                outgoing = {};
+                outgoing.command = 'connect';
+                outgoing.args = {};
+                outgoing.args.name = name;
+                messenger('send', json_dump(outgoing));
+                response = messenger('recv')
             catch
                 % do something
                 fprintf('Start failed. Possibly socket is already open.\n')
