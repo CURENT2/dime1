@@ -112,5 +112,15 @@ classdef dime
             rep = messenger('recv');
             rep = json_load(rep);
         end
+
+        function [] = run_code(recipient_name, code)
+            outgoing = {};
+            outgoing.command = 'run_code';
+            outgoing.args = {};
+            outgoing.args.recipient_name = recipient_name;
+            outgoing.args.code = code;
+            messenger('send', json_dump(outgoing));
+            messenger('recv'); % Receive an OK to set state back to "sender"
+        end
     end
 end
