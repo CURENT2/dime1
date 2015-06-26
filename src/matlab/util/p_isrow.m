@@ -1,6 +1,6 @@
-function Y = isrow(X)
+function Y = p_isrow(X)
 %
-% ISROW    True for row vectors.
+%   ISROW    True for row vectors.
 %
 %   Y = ISROW(X) returns logical 1 if X is a row vector, 0 otherwise.
 %   ISROW returns 1 for scalars also.

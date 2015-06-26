@@ -178,7 +178,7 @@ function value = merge_cell_(value, options)
           mergeable = is_mergeable_(value);
           dim = 1;
         end
-      elseif all(cellfun(@isrow, value))
+      elseif all(cellfun(@p_isrow, value))
         dim = 1;
       end
     end

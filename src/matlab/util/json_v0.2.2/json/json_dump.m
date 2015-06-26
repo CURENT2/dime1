@@ -121,7 +121,7 @@ function obj = dump_data_(value, options)
       end
     else
       if options.ColMajor && iscolumn(value) || ...
-          ~options.ColMajor && isrow(value)
+          ~options.ColMajor && p_isrow(value)
         if iscell(value)
           for i = 1:numel(value), obj.put(dump_data_(value{i}, options)); end
         else
