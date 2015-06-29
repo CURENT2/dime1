@@ -91,8 +91,8 @@ def dispatch(client_id, msg):
             pass
         connected_clients[client_id]['last_command'] = 'response'
 
-# Gets the variable name from a response message
 def get_name(response):
+"""Gets the variable name from a response message"""
     if 'meta' in response:
         if 'var_name' in response['meta']:
             return response['meta']['var_name']
@@ -100,15 +100,14 @@ def get_name(response):
     # Return a default variable name if not found
     return 'temp'
 
-# Converts name to uid!!
 def name_to_uid(name):
+"""Converts name to uid!!"""
     for key in connected_clients:
         if connected_clients[key]['name'] == name:
             return key
 
     return ''
 
-# Checks to see if the name is duplicate
 def name_is_duplicate(name):
     """Check if this name is duplicate amongst connected clients."""
     for key in connected_clients:
@@ -117,8 +116,8 @@ def name_is_duplicate(name):
 
     return False
 
-# Detaches a client from the server
 def detach(uid):
+"""Detaches a client from the server"""
     matlab.socket.send_multipart([uid, '', 'OK'])
     # LOG:DEBUG print "Exit signal received from a client"
     if (uid in connected_clients):
