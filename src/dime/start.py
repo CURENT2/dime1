@@ -4,6 +4,7 @@ import threading
 import pymatbridge
 import Queue
 import argparse
+import json
 from threading import Thread
 from pymatbridge import Matlab
 
@@ -19,7 +20,10 @@ def dispatch(client_id, msg):
             if message_to_send['is_code']:
                 matlab.run_code(client_id, message_to_send['value'])
             else:
-                matlab.set_variable(client_id, message_to_send['var_name'], message_to_send['value'])
+                if connected_clients[client_id]['type'] == 'matlab':
+                    matlab.set_variable(client_id, message_to_send['var_name'], message_to_send['value'])
+                else: # Then simply send the raw message
+                    matlab.socket.send_multipart([client_id, '', json.dumps(message_to_send)])
 
         except Queue.Empty:
             #LOG:DEBUG print "{}'s queue is empty".format(connected_clients[client_id]['name'])
