@@ -18,7 +18,7 @@ classdef dime
                 outgoing.args = {};
                 outgoing.args.name = name;
                 messenger('send', json_dump(outgoing));
-                response = messenger('recv')
+                response = messenger('recv');
             catch
                 % do something
                 fprintf('Start failed. Possibly socket is already open.\n')

@@ -93,7 +93,7 @@ def push_to_clients(own_uid, obj):
         connected_clients[uid]['queue'].put(obj)
 
 def get_name(response):
-"""Gets the variable name from a response message"""
+    """Gets the variable name from a response message"""
     if 'meta' in response:
         if 'var_name' in response['meta']:
             return response['meta']['var_name']
@@ -102,7 +102,7 @@ def get_name(response):
     return 'temp'
 
 def name_to_uid(name):
-"""Converts name to uid!!"""
+    """Converts name to uid!!"""
     for key in connected_clients:
         if connected_clients[key]['name'] == name:
             return key
@@ -118,7 +118,7 @@ def name_is_duplicate(name):
     return False
 
 def detach(uid):
-"""Detaches a client from the server"""
+    """Detaches a client from the server"""
     matlab.socket.send_multipart([uid, '', 'OK'])
     # LOG:DEBUG print "Exit signal received from a client"
     if (uid in connected_clients):
