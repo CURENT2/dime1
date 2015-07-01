@@ -10,7 +10,7 @@ machine. These can be installed using
 ```python
 $ pip install pyzmq
 ```
-You will also need  [Numpy](http://www.numpy.org/), which can be installed
+You will also need  [NumPy](http://www.numpy.org/), which can be installed
 using:
 
 ```python
@@ -25,35 +25,37 @@ distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
 
 ## Usage
 - Go to `./src/dime/` and run `start.py`
+- If serving on an address other than ipc:///tmp/dime, specify the address as a command line argument.
 - Run a matlab instance and add the DiME repository to its path.
 ```matlab
 addpath(genpath('<Path to the project directory>'))
 ```
-- Run `dime.start('<name of matlab session>')` in Matlab. For example if you intend to use it as a simulator, you would run:
+- Run `dime.start('<name of matlab session>', '<optional server address>')` in Matlab. For example if intended as a simulator, on tpc://127.0.0.1:8080 run:
 ```matlab
-dime.start('simulator')
+dime.start('simulator', 'tpc://127.0.0.1:8080')
 ```
-or if it's a module called control_module1, you would write:
+or if it's a module called control_module1 running on the default address (ipc:///tmp/dime), you would write:
 ```matlab
 dime.start('control_module1')
 ```
-- The methods are ready to be used.
 
 ## Methods
-These are the Matlab side methods that are provided for sending and receiving information from the server.
+These are the Matlab side methods that are provided for sending and receiving information from the server. Note that send_var and broadcast can send any number of variables.
 ```matlab
 % Sends a variable to a specific module
-dime.send_var('<recipient name>', '<name of variable to send>')
+dime.send_var('<recipient name>', '<name of variable to send>', '< name of second variable to send>', '<...>')
 ```
 
 ```matlab
 % Sends a variable to all connected modules
-dime.broadcast('<name of variable to send>')
+dime.broadcast('<name of variable to send>', '<...>')
 ```
 
 ```matlab
-% Checks to see if there's anything from the server and receives them.
+% Checks to see if there are any messages from the server and receives up to
+% max_msg messages. If not specified, max_msg defaults to 3.
 dime.sync()
+dime.sync(max_msg)
 ```
 
 ```matlab
@@ -89,7 +91,7 @@ are listed below.
 | Platform      | library name  | Default locations                 |
 | ------------- | ------------- | --------------------------------- |
 | MacOS         | libzmq.dylib	| /usr/lib or /usr/local/lib        |
-| Linux         | libzmq.so.3	| /usr/lib or /usr/local/lib        |
+| Linux         | libzmq.so.3	  | /usr/lib or /usr/local/lib        |
 | Windows       | libzmq.dll    | C:\Program Files\ZeroMQ 3.2.4\bin |
 
 If you specified a prefix when installing zmq, the library file should be located at the
