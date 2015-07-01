@@ -20,10 +20,7 @@ def dispatch(client_id, msg):
             if message_to_send['is_code']:
                 matlab.run_code(client_id, message_to_send['value'])
             else:
-                if connected_clients[client_id]['type'] == 'matlab':
-                    matlab.set_variable(client_id, message_to_send['var_name'], message_to_send['value'])
-                else: # Then simply send the raw message
-                    matlab.socket.send_multipart([client_id, '', json.dumps(message_to_send)])
+                matlab.set_variable(client_id, message_to_send['var_name'], message_to_send['value'])
 
         except Queue.Empty:
             #LOG:DEBUG print "{}'s queue is empty".format(connected_clients[client_id]['name'])
@@ -63,15 +60,12 @@ def dispatch(client_id, msg):
         matlab.socket.send_multipart([client_id, '', 'OK'])
         if connected_clients[client_id]['last_command'] == 'broadcast':
             # Push the variable to all other client queues
-            for uid in connected_clients:
-                if uid == client_id:
-                    continue
-                var_name = get_name(msg)
-                #LOG DEBUG print "Adding {} to {}'s queue".format(var_name, connected_clients[uid]['name'])
-                connected_clients[uid]['queue'].put({
-                    'var_name': var_name,
-                    'value': decoded_pymat_response['result'],
-                    'is_code': False })
+            var_name = get_name(msg)
+            #LOG DEBUG print "Adding {} to {}'s queue".format(var_name, connected_clients[uid]['name'])
+            push_to_clients(client_id, {
+                'var_name': var_name,
+                'value': decoded_pymat_response['result'],
+                'is_code': False })
 
         # If we are sending to only one recipient
         elif connected_clients[client_id]['last_command'] == 'send':
@@ -90,6 +84,13 @@ def dispatch(client_id, msg):
         else:
             pass
         connected_clients[client_id]['last_command'] = 'response'
+
+# Push variable to client queues
+def push_to_clients(own_uid, obj):
+    for uid in connected_clients:
+        if uid == own_uid:
+            continue
+        connected_clients[uid]['queue'].put(obj)
 
 # Gets the variable name from a response message
 def get_name(response):
@@ -162,13 +163,18 @@ if __name__ == '__main__':
             thread.start()
         else:
             if decoded_message['command'] == 'connect':
+                if 'args' not in decoded_message or 'name' not in decoded_message['args']:
+                    socket.send_multipart([uid, '', 'INVALID ARGUMENTS'])
+                    # LOG:ERROR
+                    continue
+
                 # If name is duplicate then replace uid with new one
                 if name_is_duplicate(decoded_message['args']['name']):
                     old_uid = name_to_uid(decoded_message['args']['name'])
                     connected_clients[uid] = connected_clients[old_uid]
                     del connected_clients[old_uid]
                     socket.send_multipart([uid, '', 'CONNECTED'])
-                else:
+                else: # Then this is a completely new client connecting
                     connected_clients[uid] = {}
                     connected_clients[uid]['name'] = decoded_message['args']['name']
                     connected_clients[uid]['type'] = 'matlab' # Default type
