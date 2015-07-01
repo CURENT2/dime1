@@ -21,9 +21,6 @@ response_messages = {
     # OK is not here and is sent as a single string for speed
 }
 
-# Initialize logger
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, format='%(asctime)s : %(message)s')
-
 def create_response(success, msg):
     return json.dumps({'success': success, 'args': msg})
 
@@ -141,14 +138,20 @@ def detach(uid):
 if __name__ == '__main__':
     #Check for address specification in command line
     parser = argparse.ArgumentParser()
-    parser.add_argument('address', nargs='?', default='ipc:///tmp/dime', help='input the server address here')
+    parser.add_argument('--debug', default=False, help='Run in debug mode', action='store_true')
+    parser.add_argument('address', nargs='?', default='ipc:///tmp/dime', help='Input the server address here')
     args = parser.parse_args()
+
     address = args.address
-    print "Serving on {}".format(address)
+    
+    # Initialize logger
+    log_level = logging.DEBUG if args.debug else logging.ERROR
+    logging.basicConfig(stream=sys.stdout, level=log_level, format='%(asctime)s : %(message)s')
 
     matlab = Matlab()
     matlab.start(True, True, address) # Don't start a new instance and let matlab connect
     socket = matlab.socket # This is a simple ZMQ socket but from the matlab object
+    print "Serving on {}".format(address)
 
     while True:
         msg = socket.recv_multipart()
