@@ -10,6 +10,18 @@ from pymatbridge import Matlab
 
 connected_clients = {}
 
+response_messages = {
+    'INVALID_SYNTAX': {'code': 400, 'message': 'Invalid syntax'},
+    'NO_COMMAND': {'code': 401, 'message': 'No command specified'},
+    'NOT_DECODABLE': {'code': 402, 'message': 'Message was not decodable'},
+    'NOT_CONNECTED': {'code': 403, 'message': 'Not connected. Connect first.'},
+    'INVALID_ARGUMENTS': {'code': 404, 'message': 'Invalid arguments specified'},
+    # OK is not here and is sent as a single string for speed
+}
+
+def create_response(success, msg):
+    return json.dumps({'success': success, 'args': msg})
+
 def dispatch(client_id, msg):
     """Perform a sequence of things on the client in a separate thread."""
     if msg['command'] == 'sync':
@@ -23,8 +35,8 @@ def dispatch(client_id, msg):
                 matlab.set_variable(client_id, message_to_send['var_name'], message_to_send['value'])
 
         except Queue.Empty:
-            #LOG:DEBUG print "{}'s queue is empty".format(connected_clients[client_id]['name'])
-            matlab.socket.send_multipart([client_id, '', 'COMPLETE'])
+            #LOG:DEBUG print "{}'s queue is empty".format(connected_clients[client_id]['name']))
+            matlab.socket.send_multipart([client_id, '', 'OK'])
 
     if msg['command'] == 'send':
         connected_clients[client_id]['last_command'] = 'send'
@@ -147,13 +159,15 @@ if __name__ == '__main__':
             if decoded_message == 'exit':
                 detach(uid)
             else:
-                socket.send_multipart([uid, '', 'MESSAGE NOT DECODABLE'])
+                response = create_response(False, response_messages['NOT_DECODABLE'])
+                socket.send_multipart([uid, '', response])
                 #LOG:DEBUG Message <msg> not decodable
                 continue
 
         # No command, no work!
         if 'command' not in decoded_message:
-            socket.send_multipart([uid, '', 'NO COMMAND SPECIFIED'])
+            response = create_response(False, response_messages['NO_COMMAND'])
+            socket.send_multipart([uid, '', response])
             # LOG:ERROR
             continue
 
@@ -163,7 +177,8 @@ if __name__ == '__main__':
         else:
             if decoded_message['command'] == 'connect':
                 if 'args' not in decoded_message or 'name' not in decoded_message['args']:
-                    socket.send_multipart([uid, '', 'INVALID ARGUMENTS'])
+                    response = create_response(False, response_messages['INVALID_ARGUMENTS'])
+                    socket.send_multipart([uid, '', response])
                     # LOG:ERROR
                     continue
 
@@ -172,7 +187,8 @@ if __name__ == '__main__':
                     old_uid = name_to_uid(decoded_message['args']['name'])
                     connected_clients[uid] = connected_clients[old_uid]
                     del connected_clients[old_uid]
-                    socket.send_multipart([uid, '', 'CONNECTED'])
+
+                    socket.send_multipart([uid, '', 'OK'])
                 else: # Then this is a completely new client connecting
                     connected_clients[uid] = {}
                     connected_clients[uid]['name'] = decoded_message['args']['name']
@@ -182,8 +198,9 @@ if __name__ == '__main__':
                     connected_clients[uid]['queue'] = Queue.Queue()
                     connected_clients[uid]['last_command'] = ''
 
-                    socket.send_multipart([uid, '', 'CONNECTED'])
+                    socket.send_multipart([uid, '', 'OK'])
                     #LOG:DEBUG print "New client with name {} now connected"\
                         # .format(decoded_message['args']['name'])
             else:
-                socket.send_multipart([uid, '', 'CONNECT FIRST'])
+                response = create_response(False, response_messages['NOT_CONNECTED'])
+                socket.send_multipart([uid, '', response])
