@@ -5,8 +5,9 @@ classdef dime
             messenger('exit')
         end
 
-        function [] = start(name, address)
+        function [status] = start(name, address)
             json_startup;
+            status = 0;
 
             if (nargin < 2)
                 address = 'ipc:///tmp/dime';
@@ -19,15 +20,14 @@ classdef dime
                 outgoing.args.name = name;
                 messenger('send', json_dump(outgoing));
                 response = messenger('recv');
+
+                if (strcmp(response, 'OK'))
+                    status = 1;
+                end
             catch
                 % do something
                 fprintf('Start failed. Possibly socket is already open.\n')
                 return
-            end
-            % do something
-            if strcmp(response, 'DUPLICATE_NAME_ERROR')
-                messenger('exit')
-                fprintf('Please try again with a different name.\n')
             end
         end
 
@@ -44,9 +44,10 @@ classdef dime
                 outgoing.args = '';
                 messenger('send', json_dump(outgoing));
                 msg = messenger('recv');
-                if strcmp(msg, 'COMPLETE')
+                if (strcmp(msg, 'OK'))
                     break;
                 end
+
                 % Send the response back as a response command
                 rep = pymat_eval(json_load(msg));
                 outgoing.command = 'response';
@@ -55,13 +56,9 @@ classdef dime
                 messenger('recv');
                 counter = counter - 1;
             end
-            if counter <= 0
-%                 fprintf('Iteration max exceeded. Exiting sync.\n');
-            elseif counter == max_iterations
-%                 fprintf('Nothing to sync.\n');
+
+            if counter == max_iterations
                 flag = 0;
-            else
-%                 fprintf('Sync complete.\n');
             end
         end
 
@@ -74,7 +71,7 @@ classdef dime
                 messenger('send', json_dump(outgoing));
                 msg = messenger('recv');
 
-              % eval the code and send the response back
+                % eval the code and send the response back
                 rep = pymat_eval(json_load(msg));
                 outgoing.command = 'response';
                 outgoing.args = rep;
