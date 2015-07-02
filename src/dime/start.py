@@ -143,7 +143,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     address = args.address
-    
+
     # Initialize logger
     log_level = logging.DEBUG if args.debug else logging.ERROR
     logging.basicConfig(stream=sys.stdout, level=log_level, format='%(asctime)s : %(message)s')
@@ -184,7 +184,7 @@ if __name__ == '__main__':
                 if 'args' not in decoded_message or 'name' not in decoded_message['args']:
                     response = create_response(False, response_messages['INVALID_ARGUMENTS'])
                     socket.send_multipart([uid, '', response])
-                    # LOG:ERROR
+                    logging.debug("Invalid arguments")
                     continue
 
                 # If name is duplicate then replace uid with new one
@@ -196,9 +196,6 @@ if __name__ == '__main__':
                 else: # Then this is a completely new client connecting
                     connected_clients[uid] = {}
                     connected_clients[uid]['name'] = decoded_message['args']['name']
-                    connected_clients[uid]['type'] = 'matlab' # Default type
-                    if 'type' in decoded_message['args']:
-                        connected_clients[uid]['type'] = decoded_message['args']['type']
                     connected_clients[uid]['queue'] = Queue.Queue()
                     connected_clients[uid]['last_command'] = ''
 
