@@ -24,6 +24,7 @@ distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
 
 
 ## Usage
+- Run `json_startup`
 - Go to `./src/dime/` and run `start.py`
 - If serving on an address other than ipc:///tmp/dime, specify the address as a command line argument.
 - Run a matlab instance and add the DiME repository to its path.
