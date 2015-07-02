@@ -6,7 +6,6 @@ classdef dime
         end
 
         function [status] = start(name, address)
-            json_startup;
             status = 0;
 
             if (nargin < 2)
