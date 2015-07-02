@@ -4,6 +4,7 @@ import threading
 import pymatbridge
 import Queue
 import argparse
+import json
 import logging
 import sys
 from threading import Thread
@@ -11,7 +12,17 @@ from pymatbridge import Matlab
 
 connected_clients = {}
 
-logging.basicConfig(stream=sys.stdout,level=logging.DEBUG,format='%(asctime)s : %(message)s')
+response_messages = {
+    'INVALID_SYNTAX': {'code': 400, 'message': 'Invalid syntax'},
+    'NO_COMMAND': {'code': 401, 'message': 'No command specified'},
+    'NOT_DECODABLE': {'code': 402, 'message': 'Message was not decodable'},
+    'NOT_CONNECTED': {'code': 403, 'message': 'Not connected. Connect first.'},
+    'INVALID_ARGUMENTS': {'code': 404, 'message': 'Invalid arguments specified'},
+    # OK is not here and is sent as a single string for speed
+}
+
+def create_response(success, msg):
+    return json.dumps({'success': success, 'args': msg})
 
 def dispatch(client_id, msg):
     """Perform a sequence of things on the client in a separate thread."""
@@ -26,8 +37,8 @@ def dispatch(client_id, msg):
                 matlab.set_variable(client_id, message_to_send['var_name'], message_to_send['value'])
 
         except Queue.Empty:
+            matlab.socket.send_multipart([client_id, '', 'OK'])
             logging.debug("{}'s queue is empty".format(connected_clients[client_id]['name']))
-            matlab.socket.send_multipart([client_id, '', 'COMPLETE'])
 
     if msg['command'] == 'send':
         connected_clients[client_id]['last_command'] = 'send'
@@ -127,14 +138,20 @@ def detach(uid):
 if __name__ == '__main__':
     #Check for address specification in command line
     parser = argparse.ArgumentParser()
-    parser.add_argument('address', nargs='?', default='ipc:///tmp/dime', help='input the server address here')
+    parser.add_argument('--debug', default=False, help='Run in debug mode', action='store_true')
+    parser.add_argument('address', nargs='?', default='ipc:///tmp/dime', help='Input the server address here')
     args = parser.parse_args()
+
     address = args.address
-    print "Serving on {}".format(address)
+
+    # Initialize logger
+    log_level = logging.DEBUG if args.debug else logging.ERROR
+    logging.basicConfig(stream=sys.stdout, level=log_level, format='%(asctime)s : %(message)s')
 
     matlab = Matlab()
     matlab.start(True, True, address) # Don't start a new instance and let matlab connect
     socket = matlab.socket # This is a simple ZMQ socket but from the matlab object
+    print "Serving on {}".format(address)
 
     while True:
         msg = socket.recv_multipart()
@@ -147,13 +164,15 @@ if __name__ == '__main__':
             if decoded_message == 'exit':
                 detach(uid)
             else:
-                socket.send_multipart([uid, '', 'MESSAGE NOT DECODABLE'])
-                logging.debug("Message <msg> not decodable")
+                response = create_response(False, response_messages['NOT_DECODABLE'])
+                socket.send_multipart([uid, '', response])
+                logging.debug("Message <msg> not decodable")#MOA::what?
                 continue
 
         # No command, no work!
         if 'command' not in decoded_message:
-            socket.send_multipart([uid, '', 'NO COMMAND SPECIFIED'])
+            response = create_response(False, response_messages['NO_COMMAND'])
+            socket.send_multipart([uid, '', response])
             logging.debug("Error: no command specified")
             continue
 
@@ -162,22 +181,26 @@ if __name__ == '__main__':
             thread.start()
         else:
             if decoded_message['command'] == 'connect':
+                if 'args' not in decoded_message or 'name' not in decoded_message['args']:
+                    response = create_response(False, response_messages['INVALID_ARGUMENTS'])
+                    socket.send_multipart([uid, '', response])
+                    logging.debug("Invalid arguments")
+                    continue
+
                 # If name is duplicate then replace uid with new one
                 if name_is_duplicate(decoded_message['args']['name']):
                     old_uid = name_to_uid(decoded_message['args']['name'])
                     connected_clients[uid] = connected_clients[old_uid]
                     del connected_clients[old_uid]
-                    socket.send_multipart([uid, '', 'CONNECTED'])
-                else:
+                    socket.send_multipart([uid, '', 'OK'])
+                else: # Then this is a completely new client connecting
                     connected_clients[uid] = {}
                     connected_clients[uid]['name'] = decoded_message['args']['name']
-                    connected_clients[uid]['type'] = 'matlab' # Default type
-                    if 'type' in decoded_message['args']:
-                        connected_clients[uid]['type'] = decoded_message['args']['type']
                     connected_clients[uid]['queue'] = Queue.Queue()
                     connected_clients[uid]['last_command'] = ''
 
-                    socket.send_multipart([uid, '', 'CONNECTED'])
+                    socket.send_multipart([uid, '', 'OK'])
                     logging.debug("New client with name {} now connected".format(decoded_message['args']['name']))
             else:
-                socket.send_multipart([uid, '', 'CONNECT FIRST'])
+                response = create_response(False, response_messages['NOT_CONNECTED'])
+                socket.send_multipart([uid, '', response])

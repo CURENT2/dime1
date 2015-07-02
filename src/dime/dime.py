@@ -1,11 +1,11 @@
 import zmq
 import json
+import collections
 from pymatbridge import Matlab
 
 class Dime:
     def __init__(self):
-        # TODO: Make this watchable
-        self.workspace = {}
+        self.workspace = {} # Receives all variables coming from sync
         self.matlab = Matlab()
 
     def start(self, name, address):
@@ -15,7 +15,10 @@ class Dime:
         self.socket.connect(address)
         outgoing = {'command': 'connect', 'args': {'name': name}}
         self.socket.send(json.dumps(outgoing))
-        return self.socket.recv()
+        if self.socket.recv() == 'OK':
+            return True
+        else:
+            return False
 
     def exit(self):
         self.socket.send('exit')
