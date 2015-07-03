@@ -34,10 +34,12 @@ class Dime:
             return False
 
     def exit(self):
+	"""Tells the server that the client is disconnecting and disconnects the socket."""
         self.socket.send('exit')
         self.socket.disconnect(self.address)
 
     def sync(self):
+	"""Receives variables from the client's queue on the server."""
         outgoing = {'command': 'sync'}
         self.socket.send(json.dumps(outgoing))
         msg = self.socket.recv()
@@ -90,7 +92,15 @@ class Dime:
         self.socket.recv() # Receive an OK
 
     def broadcast(self, var_name, value):
-	"""Broadcast a variable to all clients"""
+	"""Broadcast a variable to all clients.
+
+	Parameters
+	----------
+	var_name: str
+	    Name of the variable to be broadcasted
+	value: str, int
+	    Value of the variable to be broadcasted
+	"""
         outgoing = {'command': 'broadcast', 'args': var_name}
         self.socket.send(json.dumps(outgoing))
 
@@ -102,6 +112,7 @@ class Dime:
         self.socket.recv() # Receive OK
 
     def get_devices(self):
+	"""Asks the server for a list of all the devices currently connected."""
         outgoing = {'command': 'get_devices'}
         self.socket.send(json.dumps(outgoing))
         msg = json.loads(self.socket.recv())
