@@ -5,20 +5,14 @@ m2 = matlab.engine.start_matlab()
 
 m1.workspace['testvar'] = 10
 
-#insert your path to dime here...
-#make this an argument? find using sys library?
-dimepath = '/Users/austinmcever/Documents/Sum15Research/dime2'
+# insert your path to dime in appropriate dime_class_gen.m
+m1.workspace['name'] = 'm1'
+m2.workspace['name'] = 'm2'
+m1.dime_class_gen(nargout=0)
+m2.dime_class_gen(nargout=0)
 
-gendpath = m1.genpath(dimepath)
-
-m1.addpath(gendpath)
-m2.addpath(gendpath)
-
-m1.dime.start('m1', nargout=0)
-m2.dime.start('m2', nargout=0)
-
-m1.dime.send_var('m2', 'testvar', nargout=0)
-m2.dime.sync(1, nargout=0)
+m1.send_testvar(nargout=0)
+m2.sync(nargout=0)
 
 testvar = m2.workspace['testvar']
 
@@ -27,7 +21,7 @@ if testvar == 10:
 else:
     print "Test failed"
 
-m1.dime.exit(nargout=0)
-m2.dime.exit(nargout=0)
+m1.dexit(nargout=0)
+m2.dexit(nargout=0)
 m1.quit()
 m2.quit()
