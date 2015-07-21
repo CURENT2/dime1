@@ -199,12 +199,12 @@ class _Session(object):
                          stdout=subprocess.PIPE)
 
     # Start server/client session and make the connection
-    def start(self, connect_to_running_instance, act_as_server, address):
+    def start(self, run_matlab_instance, act_as_server, address, context = None):
         # Setup socket
-        self.context = zmq.Context()
+        self.context = context or zmq.Context()
 
         if act_as_server == True:
-            self.socket = self.context.socket(zmq.XREP)
+            self.socket = self.context.socket(zmq.REP)
         else:
             self.socket = self.context.socket(zmq.REQ)
 
@@ -213,7 +213,7 @@ class _Session(object):
             self.socket_addr = self.socket_addr + ":%s"%port
             self.socket.unbind(self.socket_addr)
 
-        if connect_to_running_instance == True:
+        if run_matlab_instance == False:
             # Not starting instance
             self.socket_addr = address
         else:
@@ -242,9 +242,9 @@ class _Session(object):
             raise ValueError("%s failed to start" % self._program_name())
         """
 
-    def _response(self, client_id, **kwargs):
+    def _response(self, **kwargs):
         req = json.dumps(kwargs, cls=PymatEncoder)
-        return self.socket.send_multipart([client_id, '', req])
+        return self.socket.send(req)
         # resp = self.socket.recv_multipart()
         #return resp
 
@@ -286,8 +286,8 @@ class _Session(object):
                 {'echo': '%s: Function processor is working!' % self._program_name()})
         return result['success']
 
-    def _json_response(self, client_id, **kwargs):
-        return self._response(client_id, **kwargs)
+    def _json_response(self, **kwargs):
+        return self._response(**kwargs)
         #return json.loads(, object_hook=decode_pymat)
 
     def json_decode(self, msg):
@@ -296,7 +296,7 @@ class _Session(object):
     def json_encode(self, msg):
         return json.dumps(msg, cls=PymatEncoder)
 
-    def run_func(self, client_id, func_path, *func_args, **kwargs):
+    def run_func(self, func_path, *func_args, **kwargs):
         """Run a function in Matlab and return the result.
 
         Parameters
@@ -327,14 +327,13 @@ class _Session(object):
         func_name, ext = os.path.splitext(fname)
         if ext and not ext == '.m':
             raise TypeError('Need to give path to .m file')
-        return self._json_response(client_id,
-                                   cmd='eval',
+        return self._json_response(cmd='eval',
                                    func_name=func_name,
                                    func_args=func_args or '',
                                    dname=dname,
                                    nargout=nargout)
 
-    def run_code(self, client_id, code):
+    def run_code(self, code):
         """Run some code in Matlab command line provide by a string
 
         Parameters
@@ -342,17 +341,17 @@ class _Session(object):
         code : str
             Code to send for evaluation.
         """
-        return self.run_func(client_id, 'evalin', 'base', code, nargout=0)
+        return self.run_func('evalin', 'base', code, nargout=0)
 
-    def get_variable(self, client_id, varname, default=None):
-        resp = self.run_func(client_id, 'evalin', 'base', varname)
+    def get_variable(self, varname, default=None):
+        resp = self.run_func('evalin', 'base', varname)
         return resp
         # return resp['result'] if resp['success'] else default
 
-    def set_variable(self, client_id, varname, value):
+    def set_variable(self, varname, value):
         if isinstance(value, spmatrix):
             return self._set_sparse_variable(varname, value)
-        return self.run_func(client_id, 'assignin', 'base', varname, value, nargout=0)
+        return self.run_func('assignin', 'base', varname, value, nargout=0)
 
     def set_plot_settings(self, width=512, height=384, inline=True):
         if inline:
