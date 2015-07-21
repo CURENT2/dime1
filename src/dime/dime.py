@@ -25,7 +25,7 @@ class Dime:
 
         Returns
         -------
-        Result of connection attempt: 'true' or 'false'
+        Result of connection attempt: if successful, variable name, else 'false'
         """
 
         self.context = zmq.Context.instance()
@@ -34,7 +34,7 @@ class Dime:
         outgoing = {'command': 'connect', 'name': self.name}
         self.socket.send(json.dumps(outgoing))
         if self.socket.recv() == 'OK':
-            return True
+            return self.name
         else:
             return False
 
