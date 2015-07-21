@@ -5,12 +5,8 @@ import numpy
 from pymatbridge import Matlab
 
 class Dime:
-    def __init__(self):
-        self.workspace = {} # Receives all variables coming from sync
-        self.matlab = Matlab()
-
-    def start(self, name, address):
-        """Start the python client and connect it to the server.
+    def __init__(self, name, address):
+        """Initializes a Dime client with a name and an address to connect to
 
         Parameters
         ----------
@@ -18,17 +14,24 @@ class Dime:
             Name of the client (human-readable)
         address: str
             Protocol type, IP Address, and Port number of the server to connect to
+        """
+        self.workspace = {} # Receives all variables coming from sync
+        self.matlab = Matlab()
+        self.name = name
+        self.address = address
+
+    def start(self):
+        """Start the python client and connect it to the server.
 
         Returns
         -------
         Result of connection attempt: 'true' or 'false'
         """
 
-        self.address = address
         self.context = zmq.Context.instance()
         self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect(address)
-        outgoing = {'command': 'connect', 'args': {'name': name}}
+        self.socket.connect(self.address)
+        outgoing = {'command': 'connect', 'name': self.name}
         self.socket.send(json.dumps(outgoing))
         if self.socket.recv() == 'OK':
             return True
@@ -37,7 +40,8 @@ class Dime:
 
     def exit(self):
         """Tells the server that the client is disconnecting and disconnects the socket."""
-        self.socket.send('exit')
+        outgoing = {'command': 'exit', 'name': self.name}
+        self.socket.send(json.dumps(outgoing))
         self.socket.disconnect(self.address)
 
     def sync(self, append=False, append_func=None):
@@ -60,7 +64,7 @@ class Dime:
         queue is empty, it returns False
         """
 
-        outgoing = {'command': 'sync'}
+        outgoing = {'command': 'sync', 'name': self.name}
         self.socket.send(json.dumps(outgoing))
         msg = self.socket.recv()
         try:
@@ -102,7 +106,7 @@ class Dime:
     	"""
 
         response = {'content': {'stdout': '', 'figures': [], 'datadir': '/tmp MatlabData/'}, 'result': value, 'success': True}
-        outgoing = {'command': 'response', 'meta': {'var_name': var_name}, 'args': self.matlab.json_encode(response)}
+        outgoing = {'command': 'response', 'name': self.name, 'meta': {'var_name': var_name}, 'args': self.matlab.json_encode(response)}
         return outgoing
 
     def send_var(self, recipient_name, var_name, value):
@@ -118,7 +122,7 @@ class Dime:
             Value of the variable to be sent
         """
 
-        outgoing = {'command': 'send', 'args': var_name}
+        outgoing = {'command': 'send', 'name': self.name, 'args': var_name}
         self.socket.send(json.dumps(outgoing))
 
         # Emulate the Matlab API by Receiving the pick up command
@@ -140,7 +144,7 @@ class Dime:
             Value of the variable to be broadcasted
         """
 
-        outgoing = {'command': 'broadcast', 'args': var_name}
+        outgoing = {'command': 'broadcast', 'name': self.name, 'args': var_name}
         self.socket.send(json.dumps(outgoing))
 
         # Emulate the Matlab API by Receiving the pick up command
@@ -152,7 +156,7 @@ class Dime:
 
     def get_devices(self):
         """Asks the server for a list of all the devices currently connected."""
-        outgoing = {'command': 'get_devices'}
+        outgoing = {'command': 'get_devices', 'name': self.name}
         self.socket.send(json.dumps(outgoing))
         msg = json.loads(self.socket.recv())
         return msg['response']
