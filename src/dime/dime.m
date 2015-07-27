@@ -26,6 +26,10 @@ classdef dime
             end
         end
 
+        function [] = cleanup(obj)
+            messenger('exit');
+        end
+
         function [status] = start(obj)
             status = 0;
 

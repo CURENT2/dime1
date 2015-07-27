@@ -221,12 +221,16 @@ if __name__ == '__main__':
 
     for i in range(n_worker_threads):
         thread = threading.Thread(target=worker_routine, args=(worker_address,))
+        thread.daemon = True
         thread.start()
 
     # Make a device for routing from clients to workers
-    zmq.device(zmq.QUEUE, clients_socket, workers_socket)
+    try:
+        zmq.device(zmq.QUEUE, clients_socket, workers_socket)
+    except (KeyboardInterrupt, SystemExit):
+        clients_socket.close()
+        workers_socket.close()
 
-    # We'll never get here but clean up is good practice
-    clients_socket.close()
-    workers_socket.close()
-    context.term()
+        # Terminating the context would cause errors in the sockets but not stop them
+        # context.term()
+        sys.exit()
