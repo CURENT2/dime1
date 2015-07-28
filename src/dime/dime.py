@@ -3,6 +3,7 @@ import json
 import collections
 import numpy
 from pymatbridge import Matlab
+import pprint as pp
 
 class Dime:
     def __init__(self, name, address):
@@ -25,7 +26,7 @@ class Dime:
 
         Returns
         -------
-        Result of connection attempt: if successful, variable name, else 'false'
+        Result of connection attempt: true or false
         """
 
         self.context = zmq.Context.instance()
@@ -34,7 +35,7 @@ class Dime:
         outgoing = {'command': 'connect', 'name': self.name}
         self.socket.send(json.dumps(outgoing))
         if self.socket.recv() == 'OK':
-            return self.name
+            return True
         else:
             return False
 
@@ -67,6 +68,7 @@ class Dime:
         outgoing = {'command': 'sync', 'name': self.name}
         self.socket.send(json.dumps(outgoing))
         msg = self.socket.recv()
+        pp.pprint(msg)
         try:
             msg = self.matlab.json_decode(msg)
             if append == True and msg['func_args'][1] in self.workspace:
