@@ -68,7 +68,6 @@ class Dime:
         outgoing = {'command': 'sync', 'name': self.name}
         self.socket.send(json.dumps(outgoing))
         msg = self.socket.recv()
-        pp.pprint(msg)
         try:
             msg = self.matlab.json_decode(msg)
             if append == True and msg['func_args'][1] in self.workspace:
