@@ -61,8 +61,8 @@ class Dime:
 
         Returns
         -------
-        A boolean value determining the success or failure of the sync. If the
-        queue is empty, it returns False
+        If the queue is empty, it returns False. Otherwise, it returns
+        the name of the variable that is getting updated
         """
 
         outgoing = {'command': 'sync', 'name': self.name}
@@ -78,8 +78,7 @@ class Dime:
             else:
                 self.workspace[msg['func_args'][1]] = msg['func_args'][2]
 
-            return True
-
+            return msg['func_args'][1]
         except:
             return False
 
