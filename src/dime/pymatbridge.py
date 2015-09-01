@@ -224,7 +224,7 @@ class _Session(object):
 
         if act_as_server == True:
             # Start the server
-            self.socket.bind(self.socket_addr)
+            self.socket.connect(self.socket_addr)
         else:
             # Start the client
             print "Acting as client"
