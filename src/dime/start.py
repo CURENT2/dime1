@@ -30,7 +30,7 @@ def worker_routine(worker_url, context = None):
 
     context = context or zmq.Context.instance()
     matlab = Matlab()
-    matlab.start(run_matlab_instance=False, act_as_server=True, address=address, context=context) # Don't start a new instance and let matlab connect
+    matlab.start(run_matlab_instance=False, act_as_server=True, address=worker_url, context=context) # Don't start a new instance and let matlab connect
     socket = matlab.socket # This is a simple ZMQ socket but from the matlab object
 
     while True:
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     n_worker_threads = int(args.workers)
 
     address = args.address
-    worker_address = 'inproc://dime/workers' # Inner address for DEALER-WORKER communications
+    worker_address = 'inproc://dime/workers2' # Inner address for DEALER-WORKER communications
     context = zmq.Context.instance()
 
     # Create router socket to talk to clients
