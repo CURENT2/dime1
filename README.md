@@ -140,4 +140,7 @@ After step 1 is finished, please grab the latest version of
 page. Note that pymatbridge is developed with pyzmq 14.0.0 and older versions might not
 be supported. If you have an old version of pyzmq, please update it.
 
+### Future work
+Adding the notion of channels. Case in point: Adding an event channel that sends events of the network and is separate from the normal data queue.
+
 [1]: https://pypi.python.org/pypi/pymatbridge

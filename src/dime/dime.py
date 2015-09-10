@@ -6,7 +6,7 @@ from pymatbridge import Matlab
 import pprint as pp
 
 class Dime:
-    def __init__(self, name, address):
+    def __init__(self, name, address, listen_to_events = False):
         """Initializes a Dime client with a name and an address to connect to
 
         Parameters
@@ -20,6 +20,7 @@ class Dime:
         self.matlab = Matlab()
         self.name = name
         self.address = address
+        self.listen_to_events = listen_to_events
 
     def start(self):
         """Start the python client and connect it to the server.
@@ -32,7 +33,7 @@ class Dime:
         self.context = zmq.Context.instance()
         self.socket = self.context.socket(zmq.REQ)
         self.socket.connect(self.address)
-        outgoing = {'command': 'connect', 'name': self.name}
+        outgoing = {'command': 'connect', 'name': self.name, 'listen_to_events': self.listen_to_events}
         self.socket.send(json.dumps(outgoing))
         if self.socket.recv() == 'OK':
             return True

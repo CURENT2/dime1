@@ -22,6 +22,10 @@ response_messages = {
     # OK is not here and is sent as a single string for speed
 }
 
+# Event names that clients might want to listen to
+class Event():
+    exit = 'exit'
+
 def create_response(success, msg):
     return json.dumps({'success': success, 'args': msg})
 
@@ -42,7 +46,7 @@ def worker_routine(worker_url, context = None):
             # The message is not decodable
             response = create_response(False, response_messages['NOT_DECODABLE'])
             socket.send(response)
-            logging.debug("Message {} not decodable".format(msg))#MOA::what?
+            logging.debug("Message {} not decodable".format(msg))
             continue
 
         # No command, no work!
@@ -76,6 +80,13 @@ def worker_routine(worker_url, context = None):
                 socket.send('OK')
             else: # Then this is a completely new client connecting
                 connected_clients[name] = {}
+
+                # Does the client want to listen to network events?
+                if 'listen_to_events' in decoded_message:
+                    connected_clients[name]['listen_to_events'] = decoded_message['listen_to_events']
+                else:
+                    connected_clients[name]['listen_to_events'] = False
+
                 connected_clients[name]['queue'] = Queue.Queue()
                 connected_clients[name]['last_command'] = ''
 
@@ -189,6 +200,19 @@ def detach(socket, name):
     logging.debug("Exit signal received from a client")
     if (name in connected_clients):
         del connected_clients[name]
+
+    # Let other clients know that this client exited
+    broadcast_event(subject=name, event=Event.exit)
+
+# Broadcast a system event to all those that listen to it
+def broadcast_event(subject, event):
+    for client_name in connected_clients:
+        if connected_clients[client_name]['listen_to_events'] == True:
+            connected_clients[client_name]['queue'].put({
+                'var_name': 'dime_event',
+                'value': {'subject': subject, 'event': event},
+                'is_code': False
+            })
 
 if __name__ == '__main__':
     #Check for address specification in command line

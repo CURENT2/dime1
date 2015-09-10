@@ -2,16 +2,22 @@ classdef dime
     properties
         name; % This client's name
         address;
+        listen_to_events;
     end
 
     methods
-        function obj = dime(name, address)
+        function obj = dime(name, address, listen_to_events)
             if (nargin < 2)
                 address = 'ipc:///tmp/dime';
             end
 
+            if (nargin < 3)
+                listen_to_events = false;
+            end
+
             obj.name = name;
             obj.address = address;
+            obj.listen_to_events = listen_to_events;
         end
 
         function [] = exit(obj)
@@ -37,6 +43,7 @@ classdef dime
             outgoing = {};
             outgoing.command = 'connect';
             outgoing.name = obj.name;
+            outgoing.listen_to_events = obj.listen_to_events
             messenger('send', json_dump(outgoing));
             response = messenger('recv');
 
