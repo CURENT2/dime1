@@ -1,4 +1,4 @@
-### DiME is a Distributed Matlab Environment that helps with the communication between a simulator and multiple modules. DiME uses some codes from the Python-Matlab-Bridge project from [https://github.com/arokem/python-matlab-bridge/](https://github.com/arokem/python-matlab-bridge/)
+### DiME is a Distributed Matlab Environment that allows multiple Matlab instances to communicate with each other. DiME uses some codes from the Python-Matlab-Bridge project from [https://github.com/arokem/python-matlab-bridge/](https://github.com/arokem/python-matlab-bridge/)
 
 ## Installation
 
@@ -22,52 +22,75 @@ Finally, if you want to handle sparse arrays, you will need to install
 distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
 [Enthought Canopy](https://store.enthought.com/downloads/)
 
+## Running the server
+- Run `.src/dime/start.py` to run the server.
+- You can use `./src/dime/start.py --help` to see the running options.
 
-## Usage
-- Run `json_startup`
-- Go to `./src/dime/` and run `start.py`
-- If serving on an address other than ipc:///tmp/dime, specify the address as a command line argument.
+
+## Using the Matlab interface
 - Run a matlab instance and add the DiME repository to its path.
 ```matlab
 addpath(genpath('<Path to the project directory>'))
 ```
-- Run `dime.start('<name of matlab session>', '<optional server address>')` in Matlab. For example if intended as a simulator, on tpc://127.0.0.1:8080 run:
+- Run `json_startup`
+- Instantiate a dime object:
 ```matlab
-dime.start('simulator', 'tpc://127.0.0.1:8080')
+d = dime('<name of matlab session>', '<optional server address>');
+d.start(); % and then call start()
 ```
+
+For example if intended as a simulator, on tpc://127.0.0.1:8080 run:
+```matlab
+d = dime('simulator', 'tpc://127.0.0.1:8080')
+d.start();
+```
+
 or if it's a module called control_module1 running on the default address (ipc:///tmp/dime), you would write:
 ```matlab
-dime.start('control_module1')
+d = dime('control_module1')
+d.start();
 ```
 
 ## Methods
 These are the Matlab side methods that are provided for sending and receiving information from the server. Note that send_var and broadcast can send any number of variables.
 ```matlab
 % Sends a variable to a specific module
-dime.send_var('<recipient name>', '<name of variable to send>', '< name of second variable to send>', '<...>')
+d.send_var('<recipient name>', '<name of variable to send>', '< name of second variable to send>', '<...>')
 ```
 
 ```matlab
 % Sends a variable to all connected modules
-dime.broadcast('<name of variable to send>', '<...>')
+d.broadcast('<name of variable to send>', '<...>')
 ```
 
 ```matlab
 % Checks to see if there are any messages from the server and receives up to
 % max_msg messages. If not specified, max_msg defaults to 3.
-dime.sync()
-dime.sync(max_msg)
+d.sync()
+d.sync(max_msg)
 ```
 
 ```matlab
 % Returns the names of all the connected clients
-dime.get_devices()
+d.get_devices()
+```
+
+```matlab
+% Runs code on another Matlab client
+d.run_code(<recipient name>, <code as string>)
 ```
 
 ```matlab
 % Exits and ends the session with the server
-dime.exit()
+d.exit()
 ```
+
+## Listening to system wide events
+When making a client object, you can tell it to listen to system wide events. Currently, only the `exit` event is supported. So, if a client exits the system (disconnects from the server), all other clients that have chosen to listen to events will be notified by getting a `dime_event` variable sent to them with the event details.
+
+## Python interface
+There is also a Python interface that can communicate with all matlab/python clients and supports the same things that the Matlab interface can do.
+To use it, `import dime` in './src/dime/' and instantiate a Dime object.
 
 ## Building the pymatbridge messenger from source
 
