@@ -10,8 +10,8 @@
 %              in Varout.vars
 %
 
-module_name.param= {'Bus', 'Line', 'PV', 'PQ', 'Syn'};
-module_name.vgsvaridx = [ ];
+SE.param= {'Bus', 'Line', 'PV', 'PQ', 'Syn'};
+SE.vgsvaridx = [ ];
 
 try
     json_startup; % Start JSON
@@ -23,7 +23,7 @@ try
     % Connect as a dime client. Change Module_Name to a unique name;
     % Change the address to your dime server address;
     % If you use tcp, specify the port like 'tcp://127.0.0.1:5000/dime'
-    dimec = dime('module_name', 'ipc:///tmp/dime');
+    dimec = dime('SE', 'ipc:///tmp/dime');
     dimec.cleanup();
 catch
 
@@ -64,7 +64,7 @@ while(1)
         disp(' Debug: SysParam received');
     end
     
-    if sum(states(2, :)) == 0 && sum(states(1, :) == length(prereqs)
+    if sum(states(2, :)) == 0 && sum(states(1, :)) == length(prereqs)
         %do some cleanup and reset your module
     end
 
