@@ -11,7 +11,7 @@
 %
 
 SE.param= {'Bus', 'Line', 'PV', 'PQ', 'Syn'};
-SE.vgsvaridx = [ ];
+SE.vgsvaridx = [1:3900];
 
 try
     json_startup; % Start JSON
@@ -55,8 +55,8 @@ while(1)
         % For example, to request for system parameters,
         %   Construct a matrix module_name.param = {'component names'}
         %   and send it back to VGS module named 'sim'
-        dimec.send_var('sim', module_name);
-        disp(' * Debug: Init var send');
+        dimec.send_var('sim', 'SE');
+        disp(' * Debug: Init var sent');
         while ~exist('SysParam')
             pause(0.05);
             dimec.sync;
@@ -68,8 +68,11 @@ while(1)
         %do some cleanup and reset your module
     end
 
-    if sum(sum(states)) == 2*length(prereqs) || dimec.sync
+    if sum(sum(states)) == 2*length(prereqs) 
+        if dimec.sync && exist('Varvgs')
         % Execute your own code here
+            disp(Varvgs.t)
+        end
     end
 
 end
