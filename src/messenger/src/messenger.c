@@ -50,10 +50,10 @@ int checkInitialized(void) {
 /* Cleaning up after session finished */
 void cleanup (void) {
     zmq_close(socket_ptr);
-    mexPrintf("Socket closed\n");
+    /* mexPrintf("Socket closed\n"); */
     zmq_term(ctx);
     initialized = 0;
-    mexPrintf("Context terminated\n");
+    /* mexPrintf("Context terminated\n"); */
 }
 
 

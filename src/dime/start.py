@@ -7,6 +7,7 @@ import argparse
 import json
 import logging
 import sys
+import os
 import zmq
 from threading import Thread
 from pymatbridge import Matlab
@@ -230,6 +231,8 @@ if __name__ == '__main__':
     n_worker_threads = int(args.workers)
 
     address = args.address
+    if os.name == 'nt' and address == 'ipc:///tmp/dime':
+        address = 'tcp://127.0.0.1:5000'
     worker_address = 'inproc://dime/workers2' # Inner address for DEALER-WORKER communications
     context = zmq.Context.instance()
 

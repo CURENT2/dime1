@@ -9,6 +9,9 @@ classdef dime
         function obj = dime(name, address, listen_to_events)
             if (nargin < 2)
                 address = 'ipc:///tmp/dime';
+                if findstr(computer, 'PCWIN')
+                    address = 'tcp://127.0.0.1:5000';
+                end
             end
 
             if (nargin < 3)
@@ -43,7 +46,7 @@ classdef dime
             outgoing = {};
             outgoing.command = 'connect';
             outgoing.name = obj.name;
-            outgoing.listen_to_events = obj.listen_to_events
+            outgoing.listen_to_events = obj.listen_to_events;
             messenger('send', json_dump(outgoing));
             response = messenger('recv');
 
@@ -93,7 +96,7 @@ classdef dime
                 outgoing.name = obj.name;
                 outgoing.args = var_name;
                 messenger('send', json_dump(outgoing));
-                msg = messenger('recv')
+                msg = messenger('recv');
 
                 % eval the code and send the response back
                 rep = pymat_eval(json_load(msg));
