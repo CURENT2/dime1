@@ -92,6 +92,10 @@ When making a client object, you can tell it to listen to system wide events. Cu
 There is also a Python interface that can communicate with all matlab/python clients and supports the same things that the Matlab interface can do.
 To use it, `import dime` in './src/dime/' and instantiate a Dime object.
 
+## Known issues
+ - json_startup clears all the variables in MATLAB workspace at its first launch. Run it before creating any variables
+ - DiME only fetches/write variables from/to global workspace. If dime streaming functions are called in local workspace of a function, make sure the variable you are streaming has been declared in the global. Also, when sync is called in a function, make sure the variables to receive are declared in global workspace in advance.
+
 ## Building the pymatbridge messenger from source
 
 The installation of `pymatbridge` includes a binary of a mex function to communicate between
