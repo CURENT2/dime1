@@ -39,9 +39,9 @@ d = dime('<name of matlab session>', '<optional server address>');
 d.start(); % and then call start()
 ```
 
-For example if intended as a simulator, on tpc://127.0.0.1:8080 run:
+For example if intended as a simulator, on tcp://127.0.0.1:8080 run:
 ```matlab
-d = dime('simulator', 'tpc://127.0.0.1:8080')
+d = dime('simulator', 'tcp://127.0.0.1:8080')
 d.start();
 ```
 
