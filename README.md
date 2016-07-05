@@ -22,7 +22,7 @@ Finally, if you want to handle sparse arrays, you will need to install
 distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
 [Enthought Canopy](https://store.enthought.com/downloads/)
 
-# System-wide
+### System-wide
 
 If you want to install DiME for all users, use
 
