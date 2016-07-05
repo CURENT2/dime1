@@ -22,6 +22,17 @@ Finally, if you want to handle sparse arrays, you will need to install
 distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
 [Enthought Canopy](https://store.enthought.com/downloads/)
 
+### System-wide
+
+If you want to install DiME for all users, use
+
+```python
+$ ln -s src/dime/start.py path/to/your/bin/dime
+```
+
+Be sure to place the bin containing the dime link in your path, or all
+users' paths for a system-wide install.
+
 ## Running the server
 - Run `.src/dime/start.py` to run the server.
 - You can use `./src/dime/start.py --help` to see the running options.
