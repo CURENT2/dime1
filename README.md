@@ -27,15 +27,12 @@ distributions such as [Anaconda](https://store.continuum.io/cshop/anaconda/) or
 If you want to install DiME for all users, use
 
 ```python
-$ ln -s src/dime/start.py path/to/your/bin/dime
+$ pip install git+https://USERNAME@bitbucket.org/curent/dime.git
 ```
 
-Be sure to place the bin containing the dime link in your path, or all
-users' paths for a system-wide install.
-
 ## Running the server
-- Run `.src/dime/start.py` to run the server.
-- You can use `./src/dime/start.py --help` to see the running options.
+- Run `dime` to run the server.
+- You can use `dime --help` to see the running options.
 
 
 ## Using the Matlab interface
