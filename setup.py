@@ -1,7 +1,5 @@
 from setuptools import find_packages, setup
 
-print find_packages()
-
 setup(
 	entry_points = {
 		"console_scripts": [
@@ -15,11 +13,9 @@ setup(
 	name = "dime",
 	packages = [
 		"dime",
-		"dime_messenger",
 	],
 	package_dir = {
 		"dime": "src/dime",
-		"dime_messenger": "src/messenger",
 	},
 	version = "1.0.0",
 )
