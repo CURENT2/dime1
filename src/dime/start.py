@@ -216,7 +216,7 @@ def broadcast_event(subject, event):
                 'is_code': False
             })
 
-if __name__ == '__main__':
+def main():
     #Check for address specification in command line
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', default=False, help='Run in debug mode', action='store_true')
@@ -262,3 +262,6 @@ if __name__ == '__main__':
         # Terminating the context would cause errors in the sockets but not stop them
         # context.term()
         sys.exit()
+
+if __name__ == '__main__':
+    main()
