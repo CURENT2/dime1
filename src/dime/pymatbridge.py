@@ -227,7 +227,7 @@ class _Session(object):
             self.socket.connect(self.socket_addr)
         else:
             # Start the client
-            print "Acting as client"
+            print("Acting as client")
             self.socket.connect(self.socket_addr)
 
         self.started = True
