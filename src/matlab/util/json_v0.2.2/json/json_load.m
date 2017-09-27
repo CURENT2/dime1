@@ -257,8 +257,8 @@ function y = base64decode(x)
   % Replace any incoming padding ('=' -> 64) with a zero pad
   %--------------------------------------------------------------------------
 
-  if     x(end-1) == 64, p = 2; x(end-1:end) = 0;
-  elseif x(end)   == 64, p = 1; x(end) = 0;
+  if     length(x) > 2 && x(end-1) == 64, p = 2; x(end-1:end) = 0;
+  elseif length(x) > 1 && x(end)   == 64, p = 1; x(end) = 0;
   else                   p = 0;
   end
 
