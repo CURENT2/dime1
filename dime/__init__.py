@@ -1,1 +1,1 @@
-from dime import Dime
+from .dime import Dime
