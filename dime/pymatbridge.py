@@ -41,6 +41,18 @@ except ImportError:
     class spmatrix:
         pass
 
+PYTHON_VERSION = 2
+if sys.version_info >= (3, 0):
+    PYTHON_VERSION = 3
+
+
+# socket.send wrapper for Python2 and 3
+def socket_send(socket, content):
+    if PYTHON_VERSION == 2:
+        socket.send(content)
+    else:
+        socket.send_string(content)
+
 
 def encode_ndarray(obj):
     """Write a numpy array and its shape to base64 buffers"""
@@ -218,7 +230,7 @@ class _Session(object):
             self.socket_addr = address
         else:
             # Start the MATLAB server in a new process
-            print("Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr))
+            print(("Starting %s on ZMQ socket %s" % (self._program_name(), self.socket_addr)))
             print("Send 'exit' command to kill the server")
             self._run_server()
 
@@ -244,7 +256,7 @@ class _Session(object):
 
     def _response(self, **kwargs):
         req = json.dumps(kwargs, cls=PymatEncoder)
-        return self.socket.send(req)
+        return socket_send(self.socket, req)
         # resp = self.socket.recv_multipart()
         #return resp
 
@@ -255,7 +267,7 @@ class _Session(object):
 
         # Matlab should respond with "exit" if successful
         if self._response(cmd='exit') == "exit":
-            print("%s closed" % self._program_name())
+            print(("%s closed" % self._program_name()))
 
         self.started = False
         return True
@@ -267,7 +279,7 @@ class _Session(object):
             return False
 
         req = json.dumps(dict(cmd="connect"), cls=PymatEncoder)
-        self.socket.send_string(req)
+        socket_send(self.socket, req)
 
         start_time = time.time()
         while True:
@@ -278,7 +290,7 @@ class _Session(object):
                 sys.stdout.write('.')
                 time.sleep(1)
                 if time.time() - start_time > self.maxtime:
-                    print("%s session timed out after %d seconds" % (self._program_name(), self.maxtime))
+                    print(("%s session timed out after %d seconds" % (self._program_name(), self.maxtime)))
                     return False
 
     def is_function_processor_working(self):
@@ -320,7 +332,7 @@ class _Session(object):
             raise ValueError('Session not started, use start()')
 
         nargout = kwargs.pop('nargout', 1)
-        func_args += tuple(item for pair in zip(kwargs.keys(), kwargs.values())
+        func_args += tuple(item for pair in zip(list(kwargs.keys()), list(kwargs.values()))
                            for item in pair)
         dname = os.path.dirname(func_path)
         fname = os.path.basename(func_path)
@@ -367,10 +379,10 @@ class _Session(object):
     def _set_sparse_variable(self, varname, value):
         value = value.todok()
         prefix = 'pymatbridge_temp_sparse_%s_' % uuid4().hex
-        self.set_variable(prefix + 'keys', value.keys())
+        self.set_variable(prefix + 'keys', list(value.keys()))
         # correct for 1-indexing in MATLAB
         self.run_code('{0}keys = {0}keys + 1;'.format(prefix))
-        self.set_variable(prefix + 'values', value.values())
+        self.set_variable(prefix + 'values', list(value.values()))
         cmd = "{1} = sparse({0}keys(:, 1), {0}keys(:, 2), {0}values');"
         result = self.run_code(cmd.format(prefix, varname))
         self.run_code('clear {0}keys {0}values'.format(prefix))

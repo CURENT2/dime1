@@ -23,7 +23,7 @@ The license for pexpect is below:
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 """
 
-from __future__ import print_function
+
 import os
 import platform
 import sys
@@ -222,8 +222,7 @@ def which_matlab():
             print(i)
             # only want ones with MATLAB executables
             # sort so we can get the latest
-            MATLABs = list(sorted(filter(lambda x: ensure_path(x, ".exe"),
-                                         MATLABs)))
+            MATLABs = list(sorted([x for x in MATLABs if ensure_path(x, ".exe")]))
             print(MATLABs)
             return MATLABs[-1] if len(MATLABs) > 0 else None
         elif sys.platform.startswith("linux"):

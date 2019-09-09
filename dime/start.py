@@ -1,9 +1,12 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import time
 import threading
-import pymatbridge
-import Queue
+from . import pymatbridge
+try:
+    import queue
+except ImportError:
+    import Queue
 import argparse
 import json
 import logging
@@ -11,7 +14,7 @@ import sys
 import os
 import zmq
 from threading import Thread
-from pymatbridge import Matlab
+from .pymatbridge import Matlab, socket_send
 
 connected_clients = {}
 
@@ -47,14 +50,14 @@ def worker_routine(worker_url, context = None):
         except:
             # The message is not decodable
             response = create_response(False, response_messages['NOT_DECODABLE'])
-            socket.send(response)
+            socket_send(socket, response)
             logging.debug("Message {} not decodable".format(msg))
             continue
 
         # No command, no work!
         if 'command' not in decoded_message:
             response = create_response(False, response_messages['NO_COMMAND'])
-            socket.send(response)
+            socket_send(socket, response)
             logging.debug("Error: no command specified")
             continue
 
@@ -62,7 +65,7 @@ def worker_routine(worker_url, context = None):
         name = ''
         if 'name' not in decoded_message:
             response = create_response(False, response_messages['NOT_CONNECTED'])
-            socket.send(response)
+            socket_send(socket, response)
             continue;
         else:
             name = decoded_message['name']
@@ -71,7 +74,7 @@ def worker_routine(worker_url, context = None):
         if decoded_message['command'] == 'connect':
             if 'name' not in decoded_message:
                 response = create_response(False, response_messages['INVALID_ARGUMENTS'])
-                socket.send(response)
+                socket_send(socket, response)
                 logging.debug("Invalid arguments")
                 continue
 
@@ -79,7 +82,7 @@ def worker_routine(worker_url, context = None):
             name = decoded_message['name']
             if name_is_duplicate(name):
                 logging.debug("New client hijacked old client with name {}".format(name))
-                socket.send('OK')
+                socket_send(socket, 'OK')
             else: # Then this is a completely new client connecting
                 connected_clients[name] = {}
 
@@ -89,10 +92,10 @@ def worker_routine(worker_url, context = None):
                 else:
                     connected_clients[name]['listen_to_events'] = False
 
-                connected_clients[name]['queue'] = Queue.Queue()
+                connected_clients[name]['queue'] = queue.Queue()
                 connected_clients[name]['last_command'] = ''
 
-                socket.send('OK')
+                socket_send(socket, 'OK')
                 logging.debug("New client with name {} now connected".format(name))
             continue
 
@@ -111,9 +114,9 @@ def worker_routine(worker_url, context = None):
                     matlab.run_code(message_to_send['value'])
                 else:
                     matlab.set_variable(message_to_send['var_name'], message_to_send['value'])
-            except Queue.Empty:
+            except queue.Empty:
                 logging.debug("{}'s queue is empty".format(name))
-                matlab.socket.send('OK')
+                socket_send(matlab.socket, 'OK')
 
         # COMMAND:SEND
         if decoded_message['command'] == 'send':
@@ -134,7 +137,7 @@ def worker_routine(worker_url, context = None):
                 outgoing['response'].append(key)
 
             outgoing = matlab.json_encode(outgoing)
-            matlab.socket.send(outgoing)
+            socket_send(matlab.socket, outgoing)
 
         # COMMAND:RUN_CODE MOA::Needs testing
         if decoded_message['command'] == 'run_code':
@@ -145,7 +148,7 @@ def worker_routine(worker_url, context = None):
                 'value': decoded_message['args']['code'],
                 'is_code': True
                 })
-            matlab.socket.send('OK')
+            socket_send(matlab.socket, 'OK')
 
         # COMMAND:RESPONSE
         elif decoded_message['command'] == 'response':
@@ -180,7 +183,8 @@ def worker_routine(worker_url, context = None):
             else:
                 pass
             connected_clients[name]['last_command'] = 'response'
-            matlab.socket.send('OK')
+            socket_send(matlab.socket, 'OK')
+
 
 # Gets the variable name from a response message
 def get_name(response):
@@ -198,7 +202,7 @@ def name_is_duplicate(name):
 
 # Detaches a client from the server
 def detach(socket, name):
-    socket.send('OK')
+    socket_send(socket, 'OK')
     logging.debug("Exit signal received from a client")
     if (name in connected_clients):
         del connected_clients[name]
@@ -245,7 +249,7 @@ def main():
     workers_socket = context.socket(zmq.DEALER)
     workers_socket.bind(worker_address)
 
-    print "Serving on {} with {} worker threads".format(address, n_worker_threads)
+    print("Serving on {} with {} worker threads".format(address, n_worker_threads))
 
     for i in range(n_worker_threads):
         thread = threading.Thread(target=worker_routine, args=(worker_address,))
