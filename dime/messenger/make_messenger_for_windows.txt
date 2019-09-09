@@ -1,0 +1,8 @@
+::Install ZMQ from the official ZMQ website
+::Make sure that MATLAB is installed
+::In ZeroMQ's bin directory make a copy of libzmq-v90-mt-4_0_4.dll and rename it to libzmq.dll
+::In ZeroMQ's lib directory make a copy of libzmq-v90-mt-4_0_4.lib and rename it to libzmq.lib
+::Add the bin and lib directory to Windows' environment variables
+::Run this code with the correct directory paths
+
+"C:\Program Files\MATLAB\R2014a\bin\mex" -O -L"C:\Program Files\ZeroMQ 4.0.4\lib" -I"C:\Program Files\ZeroMQ 4.0.4\include" -lzmq ./src/messenger.c
