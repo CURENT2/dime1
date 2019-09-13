@@ -1,0 +1,4 @@
+1. Install zmq with homebrew: `brew install zmq`
+2. Go to the folder containing messenger.c, namely `dime/dime/messenger/src`
+2. Compile with `/Applications/MATLAB_R2019b.app/bin/mex messenger.c -I/usr/local/include -L/usr/local/lib -lzmq`
+
