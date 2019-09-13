@@ -11,7 +11,7 @@
 %
 
 SE.param= {'Bus', 'Line', 'PV', 'PQ', 'Syn'};
-SE.vgsvaridx = [0];  % the indices of variables to be received from the simulator
+SE.vgsvaridx = 0;  % list of variable indices to be received from the simulator
 
 try
     json_startup; % Start JSON
@@ -73,7 +73,20 @@ while(1)
         if dimec.sync && exist('Varvgs', 'var')
         % Execute your own code here
             disp(Varvgs.t)
+            
+            % sample variable retrival from `Varvgs`
+            voltages = Varvgs.vars(Idxvgs.Bus.V);
+            theta = Varvgs.vars(Idxvgs.Bus.theta);
+            
+            if isfield(Idxvgs, 'DCLine')
+                Idc = Varvgs.vars(Idxvgs.DCLine.Idc);
+            end
+            if isfield(Idxvgs, 'Node')
+                Vdc = Varvgs.vars(Idxvgs.DCLine.v);
+            end
         end
+        
+        % clear the current `Varvgs` after processing
         clear Varvgs;
     end
 
