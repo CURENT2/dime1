@@ -1,0 +1,12 @@
+::Download ZeroMQ from https://dl.bintray.com/zeromq/generic/libzmq-v120-x64-4_3_2.zip
+::Unzip the folder to C:\Program Files\ZeroMQ and make sure `zmq.h` is in this folder
+::Make a copy of libzmq-v120-mt-4_3_2.dll and rename it to libzmq.dll
+::Make a copy of libzmq-v120-mt-4_3_2.lib and rename it to libzmq.lib
+::Make sure that MATLAB is installed
+::Add the whole `dime/dime` folder to MATLAB path
+::Add the bin and lib directory to Windows' PATH environment variables
+
+--- If dimeclient.start() does not working, recompile as follows ---
+::Run this code in MATLAB in the directory of `messenger`
+
+mex -O -L"C:\Program Files\ZeroMQ" -I"C:\Program Files\ZeroMQ" -lzmq ./src/messenger.c
