@@ -11,7 +11,7 @@
 %
 
 SE.param= {'Bus', 'Line', 'PV', 'PQ', 'Syn'};
-SE.vgsvaridx = [1:3900];
+SE.vgsvaridx = [0];  % the indices of variables to be received from the simulator
 
 try
     json_startup; % Start JSON
@@ -22,7 +22,7 @@ end
 try
     % Connect as a dime client. Change Module_Name to a unique name;
     % Change the address to your dime server address;
-    % If you use tcp, specify the port like 'tcp://127.0.0.1:5000/dime'
+    % If running on Microsoft Windows, specify the port like 'tcp://127.0.0.1:5000/dime'
     dimec = dime('SE', 'ipc:///tmp/dime');
     dimec.cleanup();
 catch
@@ -57,7 +57,7 @@ while(1)
         %   and send it back to VGS module named 'sim'
         dimec.send_var('sim', 'SE');
         disp(' * Debug: Init var sent');
-        while ~exist('SysParam')
+        while ~exist('SysParam', 'var')
             pause(0.05);
             dimec.sync;
         end
@@ -66,13 +66,15 @@ while(1)
     
     if sum(states(2, :)) == 0 && sum(states(1, :)) == length(prereqs)
         %do some cleanup and reset your module
+        clear SysParam
     end
 
     if sum(sum(states)) == 2*length(prereqs) 
-        if dimec.sync && exist('Varvgs')
+        if dimec.sync && exist('Varvgs', 'var')
         % Execute your own code here
             disp(Varvgs.t)
         end
+        clear Varvgs;
     end
 
 end

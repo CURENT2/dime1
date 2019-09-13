@@ -10,7 +10,6 @@
 %              in Varout.vars
 %
 
-module_name.param= {'Bus', 'Line', 'PV', 'PQ', 'Syn'};
 module_name.vgsvaridx = [ ];
 
 try
